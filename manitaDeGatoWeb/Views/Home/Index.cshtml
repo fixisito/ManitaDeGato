@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="relative rounded-3xl overflow-hidden bg-white shadow-xl mb-12 border border-pink-100">
+    <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-pink-50 to-white -z-10"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-pink-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 -z-10 transform translate-y-1/2 -translate-x-1/2"></div>
+    
+    <div class="px-8 py-12 md:px-16 md:py-16 max-w-4xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-100 text-pink-600 text-sm font-semibold mb-6">
+            <i class="fa-solid fa-sparkles"></i>
+            <span>Sistema Web Renovado</span>
+        </div>
+        
+        <h1 class="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight mb-4">
+            Bienvenido, <br/>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
+                @(User.Identity?.IsAuthenticated == true ? User.Claims.FirstOrDefault(c => c.Type == "DisplayName")?.Value : "a Manita De Gato")
+            </span>
+        </h1>
+        
+        <p class="text-lg text-gray-600 max-w-2xl leading-relaxed">
+            Tu salón de belleza de confianza, ahora con un sistema moderno y rápido.
+        </p>
+    </div>
+</div>
+
+@if (User.Identity != null && User.Identity.IsAuthenticated)
+{
+    var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+
+    if (role == "Administrador")
+    {
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Resumen de la Estética</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="bg-white rounded-2xl p-6 border border-pink-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 text-xl">
+                    <i class="fa-solid fa-calendar-check"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Citas Hoy</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.CitasHoy</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-purple-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 text-xl">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Citas Históricas</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.TotalCitas</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-xl">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Clientes Registrados</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.TotalClientes</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-green-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-green-500 text-xl">
+                    <i class="fa-solid fa-scissors"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Estilistas</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.TotalEstilistas</p>
+                </div>
+            </div>
+        </div>
+    }
+    else if (role == "Estilista")
+    {
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Tu Resumen del Día</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-white rounded-2xl p-6 border border-pink-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 text-xl">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Citas Pendientes</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.MisCitasPendientes</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-purple-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center text-purple-500 text-xl">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Citas para Hoy</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.MisCitasHoy</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-2xl p-6 border border-blue-100 shadow-sm flex items-center gap-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-500 text-xl">
+                    <i class="fa-solid fa-bell-concierge"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Servicios que Ofreces</p>
+                    <p class="text-2xl font-bold text-gray-900">@ViewBag.TotalServicios</p>
+                </div>
+            </div>
+        </div>
+    }
+    else if (role == "Cliente")
+    {
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">Tus Reservaciones</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+            <div class="bg-white rounded-2xl p-6 border border-pink-200 shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-full -z-10"></div>
+                <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-star text-pink-500"></i> Próxima Cita
+                </h3>
+                @if (ViewBag.ProximaCita != null)
+                {
+                    <div class="space-y-2">
+                        <p class="text-gray-700"><span class="font-medium">Servicio:</span> @ViewBag.ProximaCita.Servicio.Nombre</p>
+                        <p class="text-gray-700"><span class="font-medium">Estilista:</span> @ViewBag.ProximaCita.Estilista.Nombre</p>
+                        <p class="text-gray-700"><span class="font-medium">Fecha:</span> @ViewBag.ProximaCita.FechaYHora.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                }
+                else
+                {
+                    <p class="text-gray-500 italic">No tienes citas próximas agendadas.</p>
+                    <a asp-controller="Citas" asp-action="Agendar" class="inline-block mt-4 text-pink-600 font-medium hover:underline">¡Agenda una ahora!</a>
+                }
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm flex items-center gap-4">
+                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-2xl">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">Historial de Visitas</p>
+                    <p class="text-3xl font-bold text-gray-900">@ViewBag.HistorialCitas <span class="text-sm font-normal text-gray-500">citas totales</span></p>
+                </div>
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div class="flex justify-center mt-8">
+        <a asp-controller="Auth" asp-action="Login" class="px-8 py-4 bg-pink-500 text-white rounded-full font-bold text-lg shadow-lg shadow-pink-200 hover:bg-pink-600 hover:shadow-xl transition-all transform hover:-translate-y-1 flex items-center gap-2">
+            Iniciar Sesión <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+}

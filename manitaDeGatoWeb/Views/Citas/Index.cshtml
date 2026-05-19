@@ -1,0 +1,104 @@
+@model IEnumerable<manitaDeGatoWeb.Models.Cita>
+
+@{
+    ViewData["Title"] = "Gestión de Citas";
+    var isCliente = User.IsInRole("Cliente");
+    var isEstilista = User.IsInRole("Estilista");
+}
+
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h1 class="text-3xl font-bold text-gray-900">
+            @(isCliente ? "Mi Historial de Citas" : isEstilista ? "Mi Agenda" : "Todas las Citas")
+        </h1>
+        <p class="text-gray-500 mt-1">Revisa y gestiona los horarios programados.</p>
+    </div>
+    @if (isCliente)
+    {
+        <a asp-action="Agendar" class="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors shadow-md flex items-center gap-2">
+            <i class="fa-solid fa-calendar-plus"></i> Nueva Cita
+        </a>
+    }
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @foreach (var item in Model)
+    {
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <!-- Deco -->
+            <div class="absolute top-0 right-0 w-24 h-24 bg-pink-50 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
+            
+            <div class="flex justify-between items-start mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="bg-pink-100 text-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-xl">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-900">@item.FechaCita.ToString("dd MMM yyyy")</p>
+                        <p class="text-sm text-pink-500 font-medium"><i class="fa-regular fa-clock mr-1"></i> @item.HoraCita.ToString(@"hh\:mm")</p>
+                    </div>
+                </div>
+                <span class="px-2 py-1 text-xs font-semibold rounded-full @(item.Estado == "Confirmada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")">
+                    @item.Estado
+                </span>
+            </div>
+
+            <div class="space-y-2 mb-6">
+                <div class="flex items-start gap-2">
+                    <i class="fa-solid fa-bell-concierge text-gray-400 mt-1 w-5 text-center"></i>
+                    <div>
+                        <p class="text-xs text-gray-500 uppercase font-semibold">Servicio</p>
+                        <p class="text-sm text-gray-800 font-medium">@(item.Servicio?.Nombre ?? "N/A")</p>
+                    </div>
+                </div>
+                
+                @if (!isCliente)
+                {
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-user text-gray-400 mt-1 w-5 text-center"></i>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Cliente</p>
+                            <p class="text-sm text-gray-800 font-medium">@(item.Cliente?.Nombre ?? "N/A")</p>
+                        </div>
+                    </div>
+                }
+                
+                @if (!isEstilista)
+                {
+                    <div class="flex items-start gap-2">
+                        <i class="fa-solid fa-scissors text-gray-400 mt-1 w-5 text-center"></i>
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase font-semibold">Estilista</p>
+                            <p class="text-sm text-gray-800 font-medium">@(item.Estilista?.Nombre ?? "N/A") @(item.Estilista?.Apellido ?? "")</p>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="border-t border-gray-100 pt-4 flex justify-end">
+                <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" onsubmit="return confirm('¿Estás seguro de cancelar esta cita?');">
+                    <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1 transition-colors">
+                        <i class="fa-solid fa-ban"></i> Cancelar Cita
+                    </button>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="col-span-full text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+            <i class="fa-regular fa-calendar-xmark text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-medium text-gray-900">No hay citas registradas</h3>
+            <p class="mt-1 text-gray-500">
+                @(isCliente ? "Aún no has agendado ninguna cita. ¡Hazlo ahora!" : "No tienes citas programadas por el momento.")
+            </p>
+            @if (isCliente)
+            {
+                <a asp-action="Agendar" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-pink-500 hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500">
+                    Agendar mi primera cita
+                </a>
+            }
+        </div>
+    }
+</div>
