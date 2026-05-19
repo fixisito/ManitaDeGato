@@ -6,10 +6,10 @@
 
 <div class="mb-8 flex justify-between items-center">
     <div>
-        <h1 class="text-3xl font-bold text-gray-900">Personal de la Estética</h1>
-        <p class="text-gray-500 mt-1">Administra a los estilistas registrados en el sistema.</p>
+        <h1 class="text-3xl font-bold text-white">Personal de la Estética</h1>
+        <p class="text-gray-400 mt-1">Administra a los estilistas registrados en el sistema.</p>
     </div>
-    <a asp-action="Create" class="bg-pink-500 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors shadow-md flex items-center gap-2">
+    <a asp-action="Create" class="bg-pink-900/200 text-white px-6 py-2 rounded-lg hover:bg-pink-600 transition-colors shadow-md flex items-center gap-2">
         <i class="fa-solid fa-user-plus"></i> Registrar Estilista
     </a>
 </div>
@@ -39,29 +39,29 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @foreach (var item in Model)
     {
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+        <div class="neo-card rounded-2xl shadow-sm border border-gray-800 p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4 mb-4">
                 <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 text-2xl font-bold">
                     @(item.Nombre.Substring(0,1))@(item.Apellido?.Substring(0,1))
                 </div>
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">@item.Nombre @item.Apellido</h3>
-                    <p class="text-sm text-gray-500">@@@item.Usuario</p>
+                    <h3 class="text-lg font-bold text-white">@item.Nombre @item.Apellido</h3>
+                    <p class="text-sm text-gray-400">@@@item.Usuario</p>
                 </div>
             </div>
             
-            <div class="grid grid-cols-2 gap-4 border-t border-gray-100 pt-4 mt-4">
+            <div class="grid grid-cols-2 gap-4 border-t border-gray-800 pt-4 mt-4">
                 <div class="text-center">
                     <p class="text-2xl font-bold text-pink-500">@(item.Servicios?.Count ?? 0)</p>
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Servicios</p>
+                    <p class="text-xs text-gray-400 uppercase font-semibold">Servicios</p>
                 </div>
-                <div class="text-center border-l border-gray-100">
+                <div class="text-center border-l border-gray-800">
                     <p class="text-2xl font-bold text-pink-500">@(item.Citas?.Count ?? 0)</p>
-                    <p class="text-xs text-gray-500 uppercase font-semibold">Citas Total</p>
+                    <p class="text-xs text-gray-400 uppercase font-semibold">Citas Total</p>
                 </div>
             </div>
 
-            <div class="border-t border-gray-100 pt-4 mt-4 flex justify-end gap-2">
+            <div class="border-t border-gray-800 pt-4 mt-4 flex justify-end gap-2">
                 <a asp-action="Edit" asp-route-id="@item.Id" class="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center gap-1 transition-colors px-2 py-1">
                     <i class="fa-solid fa-pen"></i> Editar
                 </a>

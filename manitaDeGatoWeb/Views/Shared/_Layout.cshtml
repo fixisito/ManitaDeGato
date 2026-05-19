@@ -1,123 +1,291 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Manita De Gato</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" />
-    <style>
-        /* Custom Tailwind Configuration for Theme Colors */
-        :root {
-            --brand-primary: #ec4899; /* pink-500 */
-            --brand-dark: #1f2937;    /* gray-800 */
+    <script>
+        // Configuración de Tailwind para soportar variables CSS y evitar conflicto con el modo oscuro natural
+        tailwind.config = {
+            darkMode: 'class',
         }
+    </script>
+    <style>
+        :root {
+            --brand-pink: #ec4899;
+            --brand-purple: #9333ea;
+            
+            /* Dark Mode Defaults */
+            --bg-color: #09090b;
+            --text-color: #e4e4e7;
+            --card-bg: rgba(24, 24, 27, 0.6);
+            --dock-bg: rgba(24, 24, 27, 0.4);
+            --border-color: rgba(255, 255, 255, 0.05);
+            --input-border: rgba(255, 255, 255, 0.2);
+            --tooltip-bg: rgba(39, 39, 42, 0.9);
+            --tooltip-border: rgba(63, 63, 70, 0.5);
+            --tooltip-text: #ffffff;
+            --icon-color: #d4d4d8; /* gray-300 */
+            --icon-hover: #ffffff;
+        }
+
+        body.light-mode {
+            /* Light Mode Overrides */
+            --bg-color: #f8fafc; /* slate-50 */
+            --text-color: #0f172a; /* slate-900 */
+            --card-bg: rgba(255, 255, 255, 0.7);
+            --dock-bg: rgba(255, 255, 255, 0.6);
+            --border-color: rgba(0, 0, 0, 0.05);
+            --input-border: rgba(0, 0, 0, 0.2);
+            --tooltip-bg: rgba(255, 255, 255, 0.95);
+            --tooltip-border: rgba(226, 232, 240, 1);
+            --tooltip-text: #0f172a;
+            --icon-color: #475569; /* slate-600 */
+            --icon-hover: #0f172a; /* slate-900 */
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f3f4f6; /* gray-100 */
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+            transition: background-color 0.5s ease, color 0.5s ease;
         }
-        .glass-effect {
-            background: rgba(255, 255, 255, 0.7);
+
+        /* Utilidades dinámicas para sobrescribir las clases fijas que puso el script de powershell */
+        .neo-card {
+            background: var(--card-bg) !important;
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid var(--border-color) !important;
+            transition: all 0.3s ease;
+            color: var(--text-color) !important;
+        }
+        .neo-card:hover {
+            border-color: rgba(236, 72, 153, 0.3) !important;
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.1);
+        }
+        .text-white { color: var(--text-color) !important; }
+        .text-gray-300, .text-gray-400 { color: var(--icon-color) !important; }
+
+        /* Glassmorphism Dock */
+        .dock-glass {
+            background: var(--dock-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+            transition: background 0.5s ease;
+        }
+
+        /* Neo-brutalist inputs */
+        .neo-input {
+            background: transparent !important;
+            border: none !important;
+            border-bottom: 2px solid var(--input-border) !important;
+            border-radius: 0 !important;
+            color: var(--text-color) !important;
+            transition: all 0.3s ease;
+        }
+        .neo-input:focus {
+            box-shadow: none !important;
+            border-bottom: 2px solid var(--brand-pink) !important;
+        }
+        
+        /* Background Glows - se suavizan un poco en modo claro usando mix-blend-mode si es posible, o simplemente la opacidad cambia visualmente por contraste */
+        .glow-circle-pink {
+            position: fixed;
+            width: 60vw;
+            height: 60vw;
+            background: radial-gradient(circle, rgba(236, 72, 153, 0.12) 0%, rgba(9, 9, 11, 0) 70%);
+            border-radius: 50%;
+            top: -20vh;
+            left: -20vw;
+            z-index: -1;
+            pointer-events: none;
+        }
+        .glow-circle-purple {
+            position: fixed;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(147, 51, 234, 0.12) 0%, rgba(9, 9, 11, 0) 70%);
+            border-radius: 50%;
+            bottom: -10vh;
+            right: -10vw;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Tooltip animation corregida para simetría */
+        .dock-icon-group {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--icon-color);
+            transition: color 0.3s ease;
+        }
+        .dock-icon-group:hover {
+            color: var(--icon-hover);
+        }
+        .dock-icon-group:hover .dock-tooltip {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+        .dock-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translate(-50%, 10px);
+            margin-bottom: 12px;
+            background: var(--tooltip-bg);
+            color: var(--tooltip-text);
+            border: 1px solid var(--tooltip-border);
+            opacity: 0;
+            transition: all 0.2s ease-out;
+            pointer-events: none;
+            z-index: 100;
+        }
+        
+        /* Theme Toggle Button */
+        .theme-toggle-btn {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
         }
     </style>
 </head>
-<body class="flex flex-col min-h-screen text-gray-800 antialiased">
+<body class="flex flex-col min-h-screen antialiased pb-24">
+    <!-- Atmospheric Glows -->
+    <div class="glow-circle-pink"></div>
+    <div class="glow-circle-purple"></div>
     
-    <!-- Navbar -->
-    <header class="bg-white shadow-sm sticky top-0 z-50">
-        <nav class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-cat text-pink-500 text-2xl"></i>
-                <a asp-area="" asp-controller="Home" asp-action="Index" class="font-bold text-xl tracking-tight text-gray-900">
-                    ManitaDe<span class="text-pink-500">Gato</span>
-                </a>
+    <!-- Theme Toggle Floating Button -->
+    <button id="theme-toggle" class="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full theme-toggle-btn shadow-lg flex items-center justify-center hover:scale-110 transition-transform">
+        <i id="theme-icon" class="fa-solid fa-sun text-xl text-yellow-500"></i>
+    </button>
+
+    <!-- Header Minimalista -->
+    <header class="w-full pt-8 pb-4 px-6 md:px-12 flex justify-between items-center z-10">
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="flex items-center gap-3 group">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-xl shadow-[0_0_15px_rgba(236,72,153,0.5)] group-hover:scale-110 transition-transform">
+                <i class="fa-solid fa-cat text-white !important"></i>
             </div>
-            
-            <div class="flex items-center gap-4">
-                @if (User.Identity != null && User.Identity.IsAuthenticated)
-                {
-                    <span class="text-sm text-gray-500 hidden md:block">Hola, @User.Claims.FirstOrDefault(c => c.Type == "DisplayName")?.Value</span>
-                    <a asp-controller="Auth" asp-action="Logout" class="text-sm font-medium text-gray-600 hover:text-pink-500 transition-colors">
-                        <i class="fa-solid fa-right-from-bracket mr-1"></i> Salir
-                    </a>
-                }
-                else
-                {
-                    <a asp-controller="Auth" asp-action="Login" class="text-sm font-medium bg-pink-500 text-white px-4 py-2 rounded-full hover:bg-pink-600 transition-colors shadow-md">
-                        Iniciar Sesión
-                    </a>
-                }
-            </div>
-        </nav>
+            <span class="font-black text-2xl tracking-tighter" style="color: var(--text-color)">MANITA<span class="text-pink-500">DEGATO</span></span>
+        </a>
+        
+        <div class="flex items-center gap-4">
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <div class="text-right hidden sm:block">
+                    <p class="text-sm font-bold tracking-wide" style="color: var(--text-color)">@User.Claims.FirstOrDefault(c => c.Type == "DisplayName")?.Value</p>
+                    <p class="text-xs text-pink-500 font-mono">@User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value</p>
+                </div>
+            }
+        </div>
     </header>
 
-    <div class="flex-grow flex w-full">
-        @if (User.Identity != null && User.Identity.IsAuthenticated)
-        {
-            <!-- Sidebar -->
-            <aside class="w-64 bg-white border-r border-gray-200 hidden md:block flex-shrink-0">
-                <div class="py-6 px-4 space-y-2">
-                    <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-3">Menú Principal</div>
-                    
-                    <a asp-controller="Home" asp-action="Index" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                        <i class="fa-solid fa-house w-5 text-center"></i> Inicio
+    <main role="main" class="flex-grow p-6 md:p-8 w-full max-w-7xl mx-auto z-10 relative">
+        @RenderBody()
+    </main>
+
+    <!-- Bottom Dock Navigation -->
+    @if (User.Identity != null && User.Identity.IsAuthenticated)
+    {
+        <div class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50">
+            <nav class="dock-glass rounded-full px-4 py-3 flex items-center gap-2 sm:gap-6">
+                <!-- Home (Todos) -->
+                <a asp-controller="Home" asp-action="Index" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                    <i class="fa-solid fa-house text-xl"></i>
+                    <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">INICIO</span>
+                </a>
+
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-controller="Estilistas" asp-action="Index" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-users text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">PERSONAL</span>
                     </a>
+                    <a asp-controller="Categorias" asp-action="Index" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-layer-group text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">CATEGORIAS</span>
+                    </a>
+                    <a asp-controller="Servicios" asp-action="Index" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-bell-concierge text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">SERVICIOS</span>
+                    </a>
+                    <a asp-controller="Citas" asp-action="Index" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-calendar-days text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">AGENDA</span>
+                    </a>
+                }
+                else if (User.IsInRole("Estilista"))
+                {
+                    <a asp-controller="Servicios" asp-action="MisServicios" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-scissors text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">MIS_SERVICIOS</span>
+                    </a>
+                    <a asp-controller="Citas" asp-action="MisCitas" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-calendar-check text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">AGENDA</span>
+                    </a>
+                }
+                else if (User.IsInRole("Cliente"))
+                {
+                    <a asp-controller="Citas" asp-action="Agendar" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-calendar-plus text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">AGENDAR</span>
+                    </a>
+                    <a asp-controller="Citas" asp-action="Historial" class="dock-icon-group p-3 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                        <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                        <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest">HISTORIAL</span>
+                    </a>
+                }
 
-                    @if (User.IsInRole("Administrador"))
-                    {
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3">Gestión del Sistema</div>
-                        <a asp-controller="Estilistas" asp-action="Index" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-users w-5 text-center"></i> Personal
-                        </a>
-                        <a asp-controller="Categorias" asp-action="Index" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-layer-group w-5 text-center"></i> Categorías
-                        </a>
-                        <a asp-controller="Servicios" asp-action="Index" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-bell-concierge w-5 text-center"></i> Servicios
-                        </a>
-                        <a asp-controller="Citas" asp-action="Index" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-calendar-days w-5 text-center"></i> Todas las Citas
-                        </a>
-                    }
-                    else if (User.IsInRole("Estilista"))
-                    {
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3">Mi Espacio</div>
-                        <a asp-controller="Servicios" asp-action="MisServicios" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-scissors w-5 text-center"></i> Mis Servicios
-                        </a>
-                        <a asp-controller="Citas" asp-action="MisCitas" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-calendar-check w-5 text-center"></i> Mi Agenda
-                        </a>
-                    }
-                    else if (User.IsInRole("Cliente"))
-                    {
-                        <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 mt-4 px-3">Reservaciones</div>
-                        <a asp-controller="Citas" asp-action="Agendar" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-calendar-plus w-5 text-center"></i> Agendar Cita
-                        </a>
-                        <a asp-controller="Citas" asp-action="Historial" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-pink-50 hover:text-pink-600 transition-colors font-medium">
-                            <i class="fa-solid fa-clock-rotate-left w-5 text-center"></i> Mis Citas
-                        </a>
-                    }
-                </div>
-            </aside>
-        }
+                <div class="w-px h-8 bg-gray-400 dark:bg-gray-700 mx-1"></div>
 
-        <main role="main" class="flex-grow p-6 md:p-8 w-full max-w-7xl mx-auto">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="bg-white border-t border-gray-200 mt-auto">
-        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-            <p class="text-center text-sm text-gray-500">&copy; 2026 - ManitaDeGato - Sistema de Citas</p>
+                <!-- Botón de Salir (Todos) -->
+                <a asp-controller="Auth" asp-action="Logout" class="relative group dock-icon-group p-3 rounded-full hover:bg-pink-500/20 transition-colors" style="color: #ec4899;">
+                    <i class="fa-solid fa-power-off text-xl"></i>
+                    <span class="dock-tooltip text-[10px] sm:text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap font-mono tracking-widest" style="background: rgba(131, 24, 67, 0.9); color: white; border-color: #be185d;">SALIR</span>
+                </a>
+            </nav>
         </div>
-    </footer>
+    }
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    
+    <script>
+        // Lógica del Toggle de Tema
+        $(document).ready(function() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            // Revisa si hay un tema guardado en localStorage
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                body.classList.add('light-mode');
+                themeIcon.classList.remove('fa-sun', 'text-yellow-500');
+                themeIcon.classList.add('fa-moon', 'text-blue-500');
+            }
+
+            $('#theme-toggle').click(function() {
+                body.classList.toggle('light-mode');
+                
+                if (body.classList.contains('light-mode')) {
+                    localStorage.setItem('theme', 'light');
+                    themeIcon.classList.remove('fa-sun', 'text-yellow-500');
+                    themeIcon.classList.add('fa-moon', 'text-blue-500');
+                } else {
+                    localStorage.setItem('theme', 'dark');
+                    themeIcon.classList.remove('fa-moon', 'text-blue-500');
+                    themeIcon.classList.add('fa-sun', 'text-yellow-500');
+                }
+            });
+        });
+    </script>
 </body>
 </html>

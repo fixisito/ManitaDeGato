@@ -11,25 +11,25 @@
         </a>
     </div>
 
-    <div class="bg-white rounded-2xl shadow-md border border-gray-100 p-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-pink-50 rounded-bl-full -z-10"></div>
+    <div class="neo-card rounded-2xl shadow-md border border-gray-800 p-8 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-32 h-32 bg-pink-900/20 rounded-bl-full -z-10"></div>
         
-        <h1 class="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
+        <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
             <div class="bg-pink-100 text-pink-500 p-2 rounded-lg">
                 <i class="fa-solid fa-calendar-plus"></i>
             </div>
             Reserva tu Cita
         </h1>
-        <p class="text-gray-500 mb-6 ml-12">Elige el servicio, tu estilista favorito y el horario que mejor te acomode.</p>
+        <p class="text-gray-400 mb-6 ml-12">Elige el servicio, tu estilista favorito y el horario que mejor te acomode.</p>
 
         <form asp-action="Agendar">
             <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4 text-sm"></div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdServicio" class="block text-sm font-medium text-gray-700 mb-1">Servicio a realizar</label>
+                    <label asp-for="IdServicio" class="block text-sm font-medium text-gray-300 mb-1">Servicio a realizar</label>
                     <div class="relative">
-                        <select asp-for="IdServicio" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none bg-white" asp-items="ViewBag.IdServicio">
+                        <select asp-for="IdServicio" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none neo-card" asp-items="ViewBag.IdServicio">
                             <option value="">-- Selecciona el servicio --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -43,9 +43,9 @@
                 </div>
 
                 <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-700 mb-1">Estilista de preferencia</label>
+                    <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-300 mb-1">Estilista de preferencia</label>
                     <div class="relative">
-                        <select asp-for="IdEstilista" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none bg-white" asp-items="ViewBag.IdEstilista">
+                        <select asp-for="IdEstilista" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none neo-card" asp-items="ViewBag.IdEstilista">
                             <option value="">-- Selecciona tu estilista --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -59,7 +59,7 @@
                 </div>
 
                 <div>
-                    <label asp-for="FechaCita" class="block text-sm font-medium text-gray-700 mb-1">Día de la cita</label>
+                    <label asp-for="FechaCita" class="block text-sm font-medium text-gray-300 mb-1">Día de la cita</label>
                     <div class="relative">
                         <input asp-for="FechaCita" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </div>
@@ -67,7 +67,7 @@
                 </div>
 
                 <div>
-                    <label asp-for="HoraCita" class="block text-sm font-medium text-gray-700 mb-1">Hora de la cita</label>
+                    <label asp-for="HoraCita" class="block text-sm font-medium text-gray-300 mb-1">Hora de la cita</label>
                     <div class="relative">
                         <input asp-for="HoraCita" type="time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" />
                     </div>
@@ -75,12 +75,12 @@
                 </div>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between">
-                <p class="text-sm text-gray-500 flex items-center gap-2">
+            <div class="mt-8 pt-6 border-t border-gray-800 flex items-center justify-between">
+                <p class="text-sm text-gray-400 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info text-pink-400"></i>
                     Recibirás confirmación inmediata
                 </p>
-                <button type="submit" class="px-8 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 transition-colors shadow-lg hover:shadow-xl font-medium text-lg flex items-center gap-2">
+                <button type="submit" class="px-8 py-3 bg-pink-900/200 text-white rounded-lg hover:bg-pink-600 transition-colors shadow-lg hover:shadow-xl font-medium text-lg flex items-center gap-2">
                     Confirmar Reserva <i class="fa-solid fa-arrow-right"></i>
                 </button>
             </div>
