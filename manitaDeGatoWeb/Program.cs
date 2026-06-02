@@ -1,15 +1,18 @@
-using manitaDeGatoWeb.Models;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using manitaDeGatoWeb.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configurar el DataDirectory y resolver |DataDirectory| en la cadena de conexion de forma manual
+var rawConnectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? "";
+var dataDirectory = Path.Combine(builder.Environment.ContentRootPath, "Data");
+AppDomain.CurrentDomain.SetData("DataDirectory", dataDirectory);
+
+var connectionString = rawConnectionString.Replace("|DataDirectory|", dataDirectory);
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddSingleton(new DataBaseHelper(connectionString));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -32,17 +35,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Seed Database
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    if (!context.Administradores.Any())
-    {
-        var hash = BCrypt.Net.BCrypt.HashPassword("123");
-        context.Administradores.Add(new Administrador { Usuario = "admin", Contraseña = hash });
-        context.SaveChanges();
-    }
-}
+
 
 app.MapStaticAssets();
 

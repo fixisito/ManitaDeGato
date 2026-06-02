@@ -1,19 +1,21 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Data;
+using System.Data.SqlClient;
 using manitaDeGatoWeb.Models;
+using manitaDeGatoWeb.Data;
 
 namespace manitaDeGatoWeb.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly DataBaseHelper _dbHelper;
 
-        public AuthController(ApplicationDbContext context)
+        public AuthController(DataBaseHelper dbHelper)
         {
-            _context = context;
+            _dbHelper = dbHelper;
         }
 
         [HttpGet]
@@ -37,27 +39,45 @@ namespace manitaDeGatoWeb.Controllers
             }
 
             // 1. Check Administrador
-            var admin = await _context.Administradores.FirstOrDefaultAsync(a => a.Usuario == usuario);
-            // Comparamos el hash usando BCrypt
-            if (admin != null && BCrypt.Net.BCrypt.Verify(contrasena, admin.Contraseña))
+            var adminTable = await _dbHelper.ExecuteQueryAsync(
+                "SELECT Id, usuario FROM administradores WHERE usuario = @usuario AND contraseña = @contrasena",
+                new SqlParameter("@usuario", usuario),
+                new SqlParameter("@contrasena", contrasena));
+
+            if (adminTable.Rows.Count > 0)
             {
-                await SignInUser(admin.Id.ToString(), admin.Usuario, "Administrador", admin.Usuario);
+                var row = adminTable.Rows[0];
+                await SignInUser(row["Id"].ToString()!, row["usuario"].ToString()!, "Administrador", row["usuario"].ToString()!);
                 return RedirectToAction("Index", "Home");
             }
 
             // 2. Check Cliente
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(c => c.Usuario == usuario);
-            if (cliente != null && BCrypt.Net.BCrypt.Verify(contrasena, cliente.Contraseña))
+            var clienteTable = await _dbHelper.ExecuteQueryAsync(
+                "SELECT Id, usuario, nombre FROM clientes WHERE usuario = @usuario AND contraseña = @contrasena",
+                new SqlParameter("@usuario", usuario),
+                new SqlParameter("@contrasena", contrasena));
+
+            if (clienteTable.Rows.Count > 0)
             {
-                await SignInUser(cliente.Id.ToString(), cliente.Usuario, "Cliente", cliente.Nombre);
+                var row = clienteTable.Rows[0];
+                await SignInUser(row["Id"].ToString()!, row["usuario"].ToString()!, "Cliente", row["nombre"].ToString()!);
                 return RedirectToAction("Index", "Home");
             }
 
             // 3. Check Estilista
-            var estilista = await _context.Estilistas.FirstOrDefaultAsync(e => e.Usuario == usuario);
-            if (estilista != null && BCrypt.Net.BCrypt.Verify(contrasena, estilista.Contraseña))
+            var estilistaTable = await _dbHelper.ExecuteQueryAsync(
+                "SELECT Id, usuario, nombre, apellido FROM estilistas WHERE usuario = @usuario AND contraseña = @contrasena",
+                new SqlParameter("@usuario", usuario),
+                new SqlParameter("@contrasena", contrasena));
+
+            if (estilistaTable.Rows.Count > 0)
             {
-                await SignInUser(estilista.Id.ToString(), estilista.Usuario, "Estilista", $"{estilista.Nombre} {estilista.Apellido}");
+                var row = estilistaTable.Rows[0];
+                await SignInUser(
+                    row["Id"].ToString()!, 
+                    row["usuario"].ToString()!, 
+                    "Estilista", 
+                    $"{row["nombre"]} {row["apellido"]}");
                 return RedirectToAction("Index", "Home");
             }
 
@@ -77,26 +97,39 @@ namespace manitaDeGatoWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Verificar si el usuario ya existe
-                var existeAdmin = await _context.Administradores.AnyAsync(a => a.Usuario == cliente.Usuario);
-                var existeCliente = await _context.Clientes.AnyAsync(c => c.Usuario == cliente.Usuario);
-                var existeEstilista = await _context.Estilistas.AnyAsync(e => e.Usuario == cliente.Usuario);
+                // Verificar si el usuario ya existe en alguna de las 3 tablas
+                var countAdmin = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
+                    "SELECT COUNT(*) FROM administradores WHERE usuario = @usuario",
+                    new SqlParameter("@usuario", cliente.Usuario)));
 
-                if (existeAdmin || existeCliente || existeEstilista)
+                var countCliente = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
+                    "SELECT COUNT(*) FROM clientes WHERE usuario = @usuario",
+                    new SqlParameter("@usuario", cliente.Usuario)));
+
+                var countEstilista = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
+                    "SELECT COUNT(*) FROM estilistas WHERE usuario = @usuario",
+                    new SqlParameter("@usuario", cliente.Usuario)));
+
+                if (countAdmin > 0 || countCliente > 0 || countEstilista > 0)
                 {
                     ViewBag.Error = "El nombre de usuario ya está en uso.";
                     return View(cliente);
                 }
 
-                // Encriptar la contraseña usando BCrypt (Estándar de la industria)
-                // BCrypt genera un texto ilegible (Hash) matemáticamente irreversible.
-                cliente.Contraseña = BCrypt.Net.BCrypt.HashPassword(cliente.Contraseña);
+                // Insertar el nuevo cliente en texto plano y obtener su ID asignado (telefono es obligatorio en el MDF, asignamos cadena vacia por defecto)
+                var insertQuery = "INSERT INTO clientes (nombre, telefono, usuario, contraseña) VALUES (@nombre, '', @usuario, @contraseña); SELECT SCOPE_IDENTITY();";
+                var parameters = new[]
+                {
+                    new SqlParameter("@nombre", cliente.Nombre),
+                    new SqlParameter("@usuario", cliente.Usuario),
+                    new SqlParameter("@contraseña", cliente.Contraseña)
+                };
 
-                _context.Add(cliente);
-                await _context.SaveChangesAsync();
+                object result = await _dbHelper.ExecuteScalarAsync(insertQuery, parameters);
+                int newId = Convert.ToInt32(result);
 
                 // Iniciar sesión automáticamente tras el registro exitoso
-                await SignInUser(cliente.Id.ToString(), cliente.Usuario, "Cliente", cliente.Nombre);
+                await SignInUser(newId.ToString(), cliente.Usuario, "Cliente", cliente.Nombre);
                 
                 return RedirectToAction("Index", "Home");
             }

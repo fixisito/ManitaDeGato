@@ -1,23 +1,61 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Data;
+using System.Data.SqlClient;
 using manitaDeGatoWeb.Models;
+using manitaDeGatoWeb.Data;
 
 namespace manitaDeGatoWeb.Controllers
 {
     [Authorize(Roles = "Administrador")]
     public class CategoriasController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly DataBaseHelper _dbHelper;
 
-        public CategoriasController(ApplicationDbContext context)
+        public CategoriasController(DataBaseHelper dbHelper)
         {
-            _context = context;
+            _dbHelper = dbHelper;
         }
 
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Categorias.Include(c => c.Servicios).ToListAsync());
+            var categoriesList = new List<Categoria>();
+            
+            var dtCategories = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM categoria ORDER BY nombre");
+            foreach (DataRow rowCat in dtCategories.Rows)
+            {
+                var catId = Convert.ToInt32(rowCat["Id"]);
+                var catName = rowCat["nombre"].ToString() ?? string.Empty;
+                
+                var categoria = new Categoria
+                {
+                    Id = catId,
+                    Nombre = catName,
+                    Servicios = new List<Servicio>()
+                };
+
+                var dtServices = await _dbHelper.ExecuteQueryAsync(
+                    "SELECT Id, nombre, precio, duracion, Id_categoria, descripcion, IdEstilista FROM servicios WHERE Id_categoria = @catId",
+                    new SqlParameter("@catId", catId));
+
+                foreach (DataRow rowSer in dtServices.Rows)
+                {
+                    categoria.Servicios.Add(new Servicio
+                    {
+                        Id = Convert.ToInt32(rowSer["Id"]),
+                        Nombre = rowSer["nombre"].ToString() ?? string.Empty,
+                        Precio = Convert.ToDecimal(rowSer["precio"]),
+                        Duracion = Convert.ToInt32(rowSer["duracion"]),
+                        Id_categoria = catId,
+                        Descripcion = rowSer["descripcion"].ToString() ?? string.Empty,
+                        IdEstilista = rowSer["IdEstilista"] == DBNull.Value ? null : Convert.ToInt32(rowSer["IdEstilista"])
+                    });
+                }
+
+                categoriesList.Add(categoria);
+            }
+
+            return View(categoriesList);
         }
 
         public IActionResult Create()
@@ -31,8 +69,9 @@ namespace manitaDeGatoWeb.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(categoria);
-                await _context.SaveChangesAsync();
+                await _dbHelper.ExecuteNonQueryAsync(
+                    "INSERT INTO categoria (nombre) VALUES (@nombre)",
+                    new SqlParameter("@nombre", categoria.Nombre));
                 return RedirectToAction(nameof(Index));
             }
             return View(categoria);
@@ -42,8 +81,15 @@ namespace manitaDeGatoWeb.Controllers
         {
             if (id == null) return NotFound();
 
-            var categoria = await _context.Categorias.FindAsync(id);
-            if (categoria == null) return NotFound();
+            var dt = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM categoria WHERE Id = @id", new SqlParameter("@id", id));
+            if (dt.Rows.Count == 0) return NotFound();
+
+            var row = dt.Rows[0];
+            var categoria = new Categoria
+            {
+                Id = Convert.ToInt32(row["Id"]),
+                Nombre = row["nombre"].ToString() ?? string.Empty
+            };
 
             return View(categoria);
         }
@@ -56,8 +102,10 @@ namespace manitaDeGatoWeb.Controllers
 
             if (ModelState.IsValid)
             {
-                _context.Update(categoria);
-                await _context.SaveChangesAsync();
+                await _dbHelper.ExecuteNonQueryAsync(
+                    "UPDATE categoria SET nombre = @nombre WHERE Id = @id",
+                    new SqlParameter("@nombre", categoria.Nombre),
+                    new SqlParameter("@id", id));
                 return RedirectToAction(nameof(Index));
             }
             return View(categoria);
@@ -67,12 +115,7 @@ namespace manitaDeGatoWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var categoria = await _context.Categorias.FindAsync(id);
-            if (categoria != null)
-            {
-                _context.Categorias.Remove(categoria);
-                await _context.SaveChangesAsync();
-            }
+            await _dbHelper.ExecuteNonQueryAsync("DELETE FROM categoria WHERE Id = @id", new SqlParameter("@id", id));
             return RedirectToAction(nameof(Index));
         }
     }
