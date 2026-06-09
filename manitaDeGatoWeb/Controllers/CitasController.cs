@@ -188,7 +188,7 @@ namespace manitaDeGatoWeb.Controllers
 
         private async Task CargarServiciosYEstilistasEnViewBag(int? selectedServicioId, int? selectedEstilistaId)
         {
-            // 1. Fetch Categorias
+            // 1. Obtener lista de categorías
             var dtCategorias = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM categoria ORDER BY nombre");
             var categoriasList = new List<object>();
             foreach (DataRow row in dtCategorias.Rows)
@@ -196,7 +196,7 @@ namespace manitaDeGatoWeb.Controllers
                 categoriasList.Add(new { Id = Convert.ToInt32(row["Id"]), Nombre = row["nombre"].ToString() });
             }
 
-            // 2. Fetch Estilistas
+            // 2. Obtener lista de estilistas
             var dtEstilistas = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, apellido FROM estilistas ORDER BY nombre");
             var estilistasList = new List<object>();
             foreach (DataRow row in dtEstilistas.Rows)
@@ -204,7 +204,7 @@ namespace manitaDeGatoWeb.Controllers
                 estilistasList.Add(new { Id = Convert.ToInt32(row["Id"]), Nombre = $"{row["nombre"]} {row["apellido"]}" });
             }
 
-            // 3. Fetch Servicios
+            // 3. Obtener lista de servicios
             var dtServicios = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, Id_categoria, IdEstilista FROM servicios ORDER BY nombre");
             var serviciosList = new List<object>();
             foreach (DataRow row in dtServicios.Rows)
@@ -221,7 +221,7 @@ namespace manitaDeGatoWeb.Controllers
             ViewBag.EstilistasJson = System.Text.Json.JsonSerializer.Serialize(estilistasList);
             ViewBag.ServiciosJson = System.Text.Json.JsonSerializer.Serialize(serviciosList);
 
-            // Empty SelectLists to satisfy standard View rendering (JS will populate them)
+            // Inicializar listas vacías para el modelo (se llenarán mediante Javascript)
             ViewData["IdServicio"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
             ViewData["IdEstilista"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
         }

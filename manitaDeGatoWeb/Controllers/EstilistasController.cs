@@ -41,7 +41,7 @@ namespace manitaDeGatoWeb.Controllers
                     Citas = new List<Cita>()
                 };
 
-                // Load Services
+                // Cargar servicios del estilista
                 var dtServicios = await _dbHelper.ExecuteQueryAsync(
                     "SELECT Id, nombre, precio, duracion, Id_categoria, descripcion, IdEstilista FROM servicios WHERE IdEstilista = @estId",
                     new SqlParameter("@estId", estId));
@@ -60,7 +60,7 @@ namespace manitaDeGatoWeb.Controllers
                     });
                 }
 
-                // Load Citas
+                // Cargar citas asignadas al estilista
                 var dtCitas = await _dbHelper.ExecuteQueryAsync(
                     "SELECT Id, FechaCita, HoraCita, estado, IdCliente, IdServicio, IdEstilista FROM citas WHERE IdEstilista = @estId",
                     new SqlParameter("@estId", estId));
