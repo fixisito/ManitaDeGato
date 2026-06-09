@@ -16,6 +16,11 @@ namespace manitaDeGatoWeb.Models
         [StringLength(100)]
         public string Apellido { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "El RUT es obligatorio")]
+        [StringLength(20)]
+        [Display(Name = "RUT")]
+        public string Rut { get; set; } = string.Empty;
+
         [Required]
         [StringLength(50)]
         public string Usuario { get; set; } = string.Empty;

@@ -24,7 +24,7 @@ namespace manitaDeGatoWeb.Controllers
         public async Task<IActionResult> Index()
         {
             var list = new List<Estilista>();
-            var dtEstilistas = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, apellido, usuario, contraseña FROM estilistas ORDER BY nombre");
+            var dtEstilistas = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, apellido, rut, usuario, contraseña FROM estilistas ORDER BY nombre");
 
             foreach (DataRow rowEst in dtEstilistas.Rows)
             {
@@ -34,6 +34,7 @@ namespace manitaDeGatoWeb.Controllers
                     Id = estId,
                     Nombre = rowEst["nombre"].ToString() ?? string.Empty,
                     Apellido = rowEst["apellido"].ToString() ?? string.Empty,
+                    Rut = rowEst["rut"].ToString() ?? string.Empty,
                     Usuario = rowEst["usuario"].ToString() ?? string.Empty,
                     Contraseña = rowEst["contraseña"].ToString() ?? string.Empty,
                     Servicios = new List<Servicio>(),
@@ -93,7 +94,7 @@ namespace manitaDeGatoWeb.Controllers
         // POST: Estilistas/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Nombre,Apellido,Usuario,Contraseña")] Estilista estilista)
+        public async Task<IActionResult> Create([Bind("Nombre,Apellido,Rut,Usuario,Contraseña")] Estilista estilista)
         {
             if (ModelState.IsValid)
             {
@@ -118,9 +119,10 @@ namespace manitaDeGatoWeb.Controllers
                 var pwdPlana = estilista.Contraseña;
 
                 await _dbHelper.ExecuteNonQueryAsync(
-                    "INSERT INTO estilistas (nombre, apellido, rut, telefono, usuario, contraseña) VALUES (@nombre, @apellido, '', '', @usuario, @contraseña)",
+                    "INSERT INTO estilistas (nombre, apellido, rut, telefono, usuario, contraseña) VALUES (@nombre, @apellido, @rut, '', @usuario, @contraseña)",
                     new SqlParameter("@nombre", estilista.Nombre),
                     new SqlParameter("@apellido", estilista.Apellido),
+                    new SqlParameter("@rut", estilista.Rut),
                     new SqlParameter("@usuario", estilista.Usuario),
                     new SqlParameter("@contraseña", estilista.Contraseña));
 
@@ -136,7 +138,7 @@ namespace manitaDeGatoWeb.Controllers
             if (id == null) return NotFound();
 
             var dt = await _dbHelper.ExecuteQueryAsync(
-                "SELECT Id, nombre, apellido, usuario, contraseña FROM estilistas WHERE Id = @id",
+                "SELECT Id, nombre, apellido, rut, usuario, contraseña FROM estilistas WHERE Id = @id",
                 new SqlParameter("@id", id));
 
             if (dt.Rows.Count == 0) return NotFound();
@@ -147,6 +149,7 @@ namespace manitaDeGatoWeb.Controllers
                 Id = Convert.ToInt32(row["Id"]),
                 Nombre = row["nombre"].ToString() ?? string.Empty,
                 Apellido = row["apellido"].ToString() ?? string.Empty,
+                Rut = row["rut"].ToString() ?? string.Empty,
                 Usuario = row["usuario"].ToString() ?? string.Empty,
                 Contraseña = "" // No mandamos la contraseña real a la vista por seguridad
             };
@@ -156,7 +159,7 @@ namespace manitaDeGatoWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Usuario,Contraseña")] Estilista estilista)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Nombre,Apellido,Rut,Usuario,Contraseña")] Estilista estilista)
         {
             if (id != estilista.Id) return NotFound();
 
@@ -185,9 +188,10 @@ namespace manitaDeGatoWeb.Controllers
                 }
 
                 await _dbHelper.ExecuteNonQueryAsync(
-                    "UPDATE estilistas SET nombre = @nombre, apellido = @apellido, usuario = @usuario, contraseña = @contraseña WHERE Id = @id",
+                    "UPDATE estilistas SET nombre = @nombre, apellido = @apellido, rut = @rut, usuario = @usuario, contraseña = @contraseña WHERE Id = @id",
                     new SqlParameter("@nombre", estilista.Nombre),
                     new SqlParameter("@apellido", estilista.Apellido),
+                    new SqlParameter("@rut", estilista.Rut),
                     new SqlParameter("@usuario", estilista.Usuario),
                     new SqlParameter("@contraseña", passwordToSave),
                     new SqlParameter("@id", id));

@@ -20,33 +20,34 @@
             </div>
             Reserva tu Cita
         </h1>
-        <p class="text-gray-400 mb-6 ml-12">Elige el servicio, tu estilista favorito y el horario que mejor te acomode.</p>
+        <p class="text-gray-400 mb-6 ml-12">Elige la categoría, tu estilista favorito y el horario que mejor te acomode.</p>
 
         <form asp-action="Agendar">
             <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4 text-sm"></div>
             
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- CATEGORÍA -->
                 <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdServicio" class="block text-sm font-medium text-gray-300 mb-1">Servicio a realizar</label>
+                    <label for="IdCategoria" class="block text-sm font-medium text-gray-300 mb-1">1. Categoría del servicio</label>
                     <div class="relative">
-                        <select asp-for="IdServicio" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none" asp-items="ViewBag.IdServicio">
-                            <option value="">-- Selecciona el servicio --</option>
+                        <select id="IdCategoria" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none">
+                            <option value="">-- Selecciona una categoría --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-bell-concierge text-gray-400"></i>
+                            <i class="fa-solid fa-layer-group text-gray-400"></i>
                         </div>
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-chevron-down text-gray-400"></i>
                         </div>
                     </div>
-                    <span asp-validation-for="IdServicio" class="text-red-500 text-xs mt-1"></span>
                 </div>
 
+                <!-- ESTILISTA -->
                 <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-300 mb-1">Estilista de preferencia</label>
+                    <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-300 mb-1">2. Estilista de preferencia</label>
                     <div class="relative">
-                        <select asp-for="IdEstilista" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none" asp-items="ViewBag.IdEstilista">
-                            <option value="">-- Selecciona tu estilista --</option>
+                        <select asp-for="IdEstilista" disabled class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">-- Primero selecciona una categoría --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-solid fa-scissors text-gray-400"></i>
@@ -58,18 +59,45 @@
                     <span asp-validation-for="IdEstilista" class="text-red-500 text-xs mt-1"></span>
                 </div>
 
+                <!-- SERVICIO -->
+                <div class="col-span-1 md:col-span-2">
+                    <label asp-for="IdServicio" class="block text-sm font-medium text-gray-300 mb-1">3. Servicio a realizar</label>
+                    <div class="relative">
+                        <select asp-for="IdServicio" disabled class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                            <option value="">-- Luego selecciona tu estilista --</option>
+                        </select>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-bell-concierge text-gray-400"></i>
+                        </div>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                        </div>
+                    </div>
+                    <span asp-validation-for="IdServicio" class="text-red-500 text-xs mt-1"></span>
+                </div>
+
+                <!-- FECHA -->
                 <div>
                     <label asp-for="FechaCita" class="block text-sm font-medium text-gray-300 mb-1">Día de la cita</label>
                     <div class="relative">
-                        <input asp-for="FechaCita" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                        <input asp-for="FechaCita" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 bg-white/50 dark:bg-gray-800/50" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
                     </div>
                     <span asp-validation-for="FechaCita" class="text-red-500 text-xs mt-1"></span>
                 </div>
 
+                <!-- HORA -->
                 <div>
                     <label asp-for="HoraCita" class="block text-sm font-medium text-gray-300 mb-1">Hora de la cita</label>
                     <div class="relative">
-                        <input asp-for="HoraCita" type="time" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500" />
+                        <select asp-for="HoraCita" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none">
+                            <option value="">-- Hora --</option>
+                        </select>
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-clock text-gray-400"></i>
+                        </div>
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                        </div>
                     </div>
                     <span asp-validation-for="HoraCita" class="text-red-500 text-xs mt-1"></span>
                 </div>
@@ -90,4 +118,73 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categorias = @Html.Raw(ViewBag.CategoriasJson);
+            const estilistas = @Html.Raw(ViewBag.EstilistasJson);
+            const servicios = @Html.Raw(ViewBag.ServiciosJson);
+
+            const selCategoria = document.getElementById('IdCategoria');
+            const selEstilista = document.getElementById('IdEstilista');
+            const selServicio = document.getElementById('IdServicio');
+            const selHora = document.getElementById('HoraCita');
+
+            // 1. Cargar Categorías
+            categorias.forEach(c => {
+                selCategoria.add(new Option(c.Nombre, c.Id));
+            });
+
+            // 2. Cargar Bloques de Horas (10:00 a 20:30)
+            for(let hour = 10; hour <= 20; hour++) {
+                let hString = hour.toString().padStart(2, '0');
+                selHora.add(new Option(`${hString}:00`, `${hString}:00:00`));
+                if(hour < 21) {
+                    selHora.add(new Option(`${hString}:30`, `${hString}:30:00`));
+                }
+            }
+
+            // 3. Lógica Cascada: Categoría -> Estilista
+            selCategoria.addEventListener('change', function() {
+                selEstilista.disabled = true;
+                selServicio.disabled = true;
+                selEstilista.innerHTML = '<option value="">-- Selecciona tu estilista --</option>';
+                selServicio.innerHTML = '<option value="">-- Luego selecciona el servicio --</option>';
+
+                const catId = this.value;
+                if(catId) {
+                    estilistas.forEach(e => {
+                        selEstilista.add(new Option(e.Nombre, e.Id));
+                    });
+                    selEstilista.disabled = false;
+                }
+            });
+
+            // 4. Lógica Cascada: Estilista -> Servicio
+            selEstilista.addEventListener('change', function() {
+                selServicio.disabled = true;
+                selServicio.innerHTML = '<option value="">-- Selecciona el servicio --</option>';
+                
+                const catId = parseInt(selCategoria.value);
+                const estId = parseInt(this.value);
+
+                if(catId && estId) {
+                    // Filtrar servicios de la categoría elegida, que sean globales o del estilista
+                    const serviciosFiltrados = servicios.filter(s => 
+                        s.IdCategoria === catId && 
+                        (s.IdEstilista === null || s.IdEstilista === estId)
+                    );
+
+                    serviciosFiltrados.forEach(s => {
+                        selServicio.add(new Option(s.Nombre, s.Id));
+                    });
+                    
+                    if(serviciosFiltrados.length === 0) {
+                        selServicio.innerHTML = '<option value="">-- No hay servicios disponibles --</option>';
+                    } else {
+                        selServicio.disabled = false;
+                    }
+                }
+            });
+        });
+    </script>
 }

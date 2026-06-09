@@ -188,30 +188,42 @@ namespace manitaDeGatoWeb.Controllers
 
         private async Task CargarServiciosYEstilistasEnViewBag(int? selectedServicioId, int? selectedEstilistaId)
         {
-            var dtServicios = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM servicios ORDER BY nombre");
-            var servicios = new List<Servicio>();
-            foreach (DataRow row in dtServicios.Rows)
+            // 1. Fetch Categorias
+            var dtCategorias = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM categoria ORDER BY nombre");
+            var categoriasList = new List<object>();
+            foreach (DataRow row in dtCategorias.Rows)
             {
-                servicios.Add(new Servicio
-                {
-                    Id = Convert.ToInt32(row["Id"]),
-                    Nombre = row["nombre"].ToString() ?? string.Empty
-                });
+                categoriasList.Add(new { Id = Convert.ToInt32(row["Id"]), Nombre = row["nombre"].ToString() });
             }
 
+            // 2. Fetch Estilistas
             var dtEstilistas = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, apellido FROM estilistas ORDER BY nombre");
-            var estilistas = new List<Estilista>();
+            var estilistasList = new List<object>();
             foreach (DataRow row in dtEstilistas.Rows)
             {
-                estilistas.Add(new Estilista
-                {
-                    Id = Convert.ToInt32(row["Id"]),
-                    Nombre = $"{row["nombre"]} {row["apellido"]}"
+                estilistasList.Add(new { Id = Convert.ToInt32(row["Id"]), Nombre = $"{row["nombre"]} {row["apellido"]}" });
+            }
+
+            // 3. Fetch Servicios
+            var dtServicios = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, Id_categoria, IdEstilista FROM servicios ORDER BY nombre");
+            var serviciosList = new List<object>();
+            foreach (DataRow row in dtServicios.Rows)
+            {
+                serviciosList.Add(new { 
+                    Id = Convert.ToInt32(row["Id"]), 
+                    Nombre = row["nombre"].ToString(),
+                    IdCategoria = Convert.ToInt32(row["Id_categoria"]),
+                    IdEstilista = row.IsNull("IdEstilista") ? (int?)null : Convert.ToInt32(row["IdEstilista"])
                 });
             }
 
-            ViewData["IdServicio"] = new SelectList(servicios, "Id", "Nombre", selectedServicioId);
-            ViewData["IdEstilista"] = new SelectList(estilistas, "Id", "Nombre", selectedEstilistaId);
+            ViewBag.CategoriasJson = System.Text.Json.JsonSerializer.Serialize(categoriasList);
+            ViewBag.EstilistasJson = System.Text.Json.JsonSerializer.Serialize(estilistasList);
+            ViewBag.ServiciosJson = System.Text.Json.JsonSerializer.Serialize(serviciosList);
+
+            // Empty SelectLists to satisfy standard View rendering (JS will populate them)
+            ViewData["IdServicio"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
+            ViewData["IdEstilista"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
         }
     }
 }
