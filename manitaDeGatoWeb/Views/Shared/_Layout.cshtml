@@ -6,8 +6,10 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         if (savedTheme === 'dark') {
             document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light-mode');
         } else {
             document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light-mode');
         }
     </script>
     <meta charset="utf-8" />
@@ -40,7 +42,7 @@
             --icon-hover: #ffffff;
         }
 
-        body.light-mode {
+        :root.light-mode {
             /* Light Mode Overrides */
             --bg-color: #f8fafc; /* slate-50 */
             --text-color: #0f172a; /* slate-900 */
@@ -277,13 +279,13 @@
             
             const savedTheme = localStorage.getItem('theme') || 'light';
             if (savedTheme === 'light') {
-                body.classList.add('light-mode');
+                html.classList.add('light-mode');
                 html.classList.remove('dark');
                 if (themeIcon) {
                     themeIcon.className = 'fa-solid fa-moon text-xl text-blue-500';
                 }
             } else {
-                body.classList.remove('light-mode');
+                html.classList.remove('light-mode');
                 html.classList.add('dark');
                 if (themeIcon) {
                     themeIcon.className = 'fa-solid fa-sun text-xl text-yellow-500';
@@ -291,13 +293,13 @@
             }
 
             $('#theme-toggle').click(function() {
-                if (body.classList.contains('light-mode')) {
-                    body.classList.remove('light-mode');
+                if (html.classList.contains('light-mode')) {
+                    html.classList.remove('light-mode');
                     html.classList.add('dark');
                     localStorage.setItem('theme', 'dark');
                     if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-xl text-yellow-500';
                 } else {
-                    body.classList.add('light-mode');
+                    html.classList.add('light-mode');
                     html.classList.remove('dark');
                     localStorage.setItem('theme', 'light');
                     if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-xl text-blue-500';
