@@ -115,7 +115,15 @@ namespace manitaDeGatoWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            await _dbHelper.ExecuteNonQueryAsync("DELETE FROM categoria WHERE Id = @id", new SqlParameter("@id", id));
+            try
+            {
+                await _dbHelper.ExecuteNonQueryAsync("DELETE FROM categoria WHERE Id = @id", new SqlParameter("@id", id));
+            }
+            catch (SqlException ex) when (ex.Number == 547)
+            {
+                TempData["MensajeError"] = "No se puede eliminar esta categoría porque tiene servicios asociados.";
+                return RedirectToAction(nameof(Index));
+            }
             return RedirectToAction(nameof(Index));
         }
     }

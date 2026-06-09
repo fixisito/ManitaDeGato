@@ -3,11 +3,6 @@
 }
 
 <div class="relative rounded-3xl overflow-hidden neo-card mb-12 p-8 md:p-16">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 text-sm font-mono tracking-widest border border-pink-500/30 mb-6">
-        <i class="fa-solid fa-sparkles"></i>
-        <span>V2.1 no confiable la verdad (en testeo)</span>
-    </div>
-    
     <h1 class="text-4xl md:text-6xl font-black text-white tracking-tighter leading-none mb-6 uppercase">
         BIENVENIDO A <br/>
         <span class="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-600">
@@ -35,130 +30,96 @@
 @if (User.Identity != null && User.Identity.IsAuthenticated)
 {
     var role = User.Claims.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value;
+    var displayName = User.Claims.FirstOrDefault(c => c.Type == "DisplayName")?.Value;
 
     if (role == "Administrador")
     {
-        <div class="flex items-center gap-4 mb-8">
-            <div class="w-2 h-8 bg-pink-900/200"></div>
-            <h2 class="text-2xl font-black text-white tracking-widest uppercase">RESUMEN DEL SISTEMA</h2>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px] group">
-                <div class="flex justify-between items-start text-gray-400 group-hover:text-pink-400 transition-colors">
-                    <span class="text-xs font-mono tracking-widest uppercase">CITAS HOY</span>
-                    <i class="fa-solid fa-calendar-check text-xl"></i>
+        <div class="neo-card p-8 md:p-10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-xl text-pink-400"></i>
                 </div>
-                <p class="text-5xl font-black text-white">@ViewBag.CitasHoy</p>
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight uppercase">Bienvenido, Administrador</h2>
+                    <p class="text-sm text-gray-400 font-mono tracking-wide">PANEL DE ACCESO RÁPIDO</p>
+                </div>
             </div>
-            
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px] group">
-                <div class="flex justify-between items-start text-gray-400 group-hover:text-purple-400 transition-colors">
-                    <span class="text-xs font-mono tracking-widest uppercase">HISTÓRICO</span>
-                    <i class="fa-solid fa-calendar-days text-xl"></i>
-                </div>
-                <p class="text-5xl font-black text-white">@ViewBag.TotalCitas</p>
-            </div>
-            
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px] group">
-                <div class="flex justify-between items-start text-gray-400 group-hover:text-blue-400 transition-colors">
-                    <span class="text-xs font-mono tracking-widest uppercase">CLIENTES</span>
-                    <i class="fa-solid fa-users text-xl"></i>
-                </div>
-                <p class="text-5xl font-black text-white">@ViewBag.TotalClientes</p>
-            </div>
-            
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px] group">
-                <div class="flex justify-between items-start text-gray-400 group-hover:text-green-400 transition-colors">
-                    <span class="text-xs font-mono tracking-widest uppercase">ESTILISTAS</span>
-                    <i class="fa-solid fa-scissors text-xl"></i>
-                </div>
-                <p class="text-5xl font-black text-white">@ViewBag.TotalEstilistas</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <a asp-controller="Estilistas" asp-action="Index" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-users text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Estilistas</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
+                <a asp-controller="Servicios" asp-action="Index" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-bell-concierge text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Servicios</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
+                <a asp-controller="Categorias" asp-action="Index" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-layer-group text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Categorías</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
+                <a asp-controller="Citas" asp-action="Index" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-calendar-days text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Agenda</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
             </div>
         </div>
     }
     else if (role == "Estilista")
     {
-        <div class="flex items-center gap-4 mb-8">
-            <div class="w-2 h-8 bg-purple-900/200"></div>
-            <h2 class="text-2xl font-black text-white tracking-widest uppercase">TU AGENDA</h2>
-        </div>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px]">
-                <div class="flex justify-between items-start text-gray-400">
-                    <span class="text-xs font-mono tracking-widest uppercase">CITAS PENDIENTES</span>
-                    <i class="fa-solid fa-clock text-xl"></i>
+        <div class="neo-card p-8 md:p-10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-scissors text-xl text-pink-400"></i>
                 </div>
-                <p class="text-5xl font-black text-white">@ViewBag.MisCitasPendientes</p>
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight uppercase">Bienvenido, @displayName</h2>
+                    <p class="text-sm text-gray-400 font-mono tracking-wide">TU ESPACIO DE TRABAJO</p>
+                </div>
             </div>
-            
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px]">
-                <div class="flex justify-between items-start text-gray-400">
-                    <span class="text-xs font-mono tracking-widest uppercase">PARA HOY</span>
-                    <i class="fa-solid fa-calendar-day text-xl"></i>
-                </div>
-                <p class="text-5xl font-black text-white">@ViewBag.MisCitasHoy</p>
-            </div>
-            
-            <div class="neo-card p-6 flex flex-col justify-between min-h-[140px]">
-                <div class="flex justify-between items-start text-gray-400">
-                    <span class="text-xs font-mono tracking-widest uppercase">MIS SERVICIOS</span>
-                    <i class="fa-solid fa-bell-concierge text-xl"></i>
-                </div>
-                <p class="text-5xl font-black text-white">@ViewBag.TotalServicios</p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <a asp-controller="Servicios" asp-action="MisServicios" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-bell-concierge text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Mis Servicios</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
+                <a asp-controller="Citas" asp-action="MisCitas" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-calendar-check text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Mi Agenda</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
             </div>
         </div>
     }
     else if (role == "Cliente")
     {
-        <div class="flex items-center gap-4 mb-8">
-            <div class="w-2 h-8 bg-pink-900/200"></div>
-            <h2 class="text-2xl font-black text-white tracking-widest uppercase">TUS RESERVACIONES</h2>
-        </div>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
-            <div class="neo-card p-8 relative overflow-hidden border-pink-500/30">
-                <div class="absolute -right-10 -top-10 w-40 h-40 bg-pink-900/200/10 rounded-full blur-2xl"></div>
-                
-                <h3 class="text-xs font-mono text-pink-400 tracking-widest uppercase mb-6 flex items-center gap-2">
-                    <i class="fa-solid fa-star"></i> PRÓXIMA CITA
-                </h3>
-                
-                @if (ViewBag.ProximaCita != null)
-                {
-                    <div class="space-y-4 font-mono text-sm">
-                        <div class="flex justify-between border-b border-gray-700 pb-2">
-                            <span class="text-gray-400">SERVICIO</span>
-                            <span class="text-white text-right">@ViewBag.ProximaCita.Servicio.Nombre</span>
-                        </div>
-                        <div class="flex justify-between border-b border-gray-700 pb-2">
-                            <span class="text-gray-400">ESTILISTA</span>
-                            <span class="text-white text-right">@ViewBag.ProximaCita.Estilista.Nombre</span>
-                        </div>
-                        <div class="flex justify-between border-b border-gray-700 pb-2">
-                            <span class="text-gray-400">FECHA/HORA</span>
-                            <span class="text-pink-400 font-bold text-right">@ViewBag.ProximaCita.FechaYHora.ToString("dd/MM/yyyy HH:mm")</span>
-                        </div>
-                    </div>
-                }
-                else
-                {
-                    <p class="text-gray-400 font-mono text-sm mt-4">NO TIENES CITAS PRÓXIMAS AGENDADAS.</p>
-                    <a asp-controller="Citas" asp-action="Agendar" class="inline-block mt-6 px-6 py-3 neo-card/5 border border-pink-500/50 text-pink-400 text-xs font-mono tracking-widest hover:bg-pink-900/200 hover:text-white transition-colors">
-                        AGENDAR AHORA
-                    </a>
-                }
+        <div class="neo-card p-8 md:p-10">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 rounded-xl bg-pink-500/10 flex items-center justify-center">
+                    <i class="fa-solid fa-heart text-xl text-pink-400"></i>
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-tight uppercase">Bienvenido, @displayName</h2>
+                    <p class="text-sm text-gray-400 font-mono tracking-wide">TU ESPACIO PERSONAL</p>
+                </div>
             </div>
 
-            <div class="neo-card p-8 flex flex-col justify-between">
-                <div class="flex justify-between items-start text-gray-400">
-                    <span class="text-xs font-mono tracking-widest uppercase">HISTORIAL DE VISITAS</span>
-                    <i class="fa-solid fa-clock-rotate-left text-2xl text-gray-600"></i>
-                </div>
-                <div class="mt-8">
-                    <p class="text-6xl font-black text-white">@ViewBag.HistorialCitas <span class="text-lg font-light text-gray-400 uppercase tracking-widest">CITAS</span></p>
-                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <a asp-controller="Citas" asp-action="Agendar" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-calendar-plus text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Agendar Cita</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
+                <a asp-controller="Citas" asp-action="Historial" class="flex items-center gap-4 p-4 rounded-xl bg-pink-500/10 hover:bg-pink-500/20 transition-colors group">
+                    <i class="fa-solid fa-clock-rotate-left text-pink-400 text-lg"></i>
+                    <span class="text-sm font-bold text-white tracking-wide uppercase">Mi Historial</span>
+                    <i class="fa-solid fa-arrow-right ml-auto text-gray-400 group-hover:text-pink-400 transition-colors"></i>
+                </a>
             </div>
         </div>
     }

@@ -15,7 +15,7 @@
         <div class="absolute top-0 right-0 w-32 h-32 bg-pink-900/20 rounded-bl-full -z-10"></div>
         
         <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
-            <div class="bg-pink-100 text-pink-500 p-2 rounded-lg">
+            <div class="bg-pink-500/10 text-pink-500 p-2 rounded-lg">
                 <i class="fa-solid fa-calendar-plus"></i>
             </div>
             Reserva tu Cita
@@ -29,7 +29,7 @@
                 <div class="col-span-1 md:col-span-2">
                     <label asp-for="IdServicio" class="block text-sm font-medium text-gray-300 mb-1">Servicio a realizar</label>
                     <div class="relative">
-                        <select asp-for="IdServicio" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none neo-card" asp-items="ViewBag.IdServicio">
+                        <select asp-for="IdServicio" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none" asp-items="ViewBag.IdServicio">
                             <option value="">-- Selecciona el servicio --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -45,7 +45,7 @@
                 <div class="col-span-1 md:col-span-2">
                     <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-300 mb-1">Estilista de preferencia</label>
                     <div class="relative">
-                        <select asp-for="IdEstilista" class="w-full pl-10 px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 appearance-none neo-card" asp-items="ViewBag.IdEstilista">
+                        <select asp-for="IdEstilista" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none" asp-items="ViewBag.IdEstilista">
                             <option value="">-- Selecciona tu estilista --</option>
                         </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

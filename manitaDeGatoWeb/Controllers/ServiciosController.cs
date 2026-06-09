@@ -218,9 +218,17 @@ namespace manitaDeGatoWeb.Controllers
                     return Unauthorized();
                 }
 
-                await _dbHelper.ExecuteNonQueryAsync(
-                    "DELETE FROM servicios WHERE Id = @id",
-                    new SqlParameter("@id", id));
+                try
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "DELETE FROM servicios WHERE Id = @id",
+                        new SqlParameter("@id", id));
+                }
+                catch (SqlException ex) when (ex.Number == 547)
+                {
+                    TempData["MensajeError"] = "No se puede eliminar este servicio porque tiene citas asociadas.";
+                    return User.IsInRole("Estilista") ? RedirectToAction(nameof(MisServicios)) : RedirectToAction(nameof(Index));
+                }
             }
 
             return User.IsInRole("Estilista") ? RedirectToAction(nameof(MisServicios)) : RedirectToAction(nameof(Index));

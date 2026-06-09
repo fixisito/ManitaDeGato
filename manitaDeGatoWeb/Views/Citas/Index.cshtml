@@ -30,7 +30,7 @@
             
             <div class="flex justify-between items-start mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="bg-pink-100 text-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-xl">
+                    <div class="bg-pink-500/10 text-pink-500 w-12 h-12 rounded-xl flex items-center justify-center text-xl">
                         <i class="fa-regular fa-calendar-check"></i>
                     </div>
                     <div>
@@ -38,7 +38,7 @@
                         <p class="text-sm text-pink-500 font-medium"><i class="fa-regular fa-clock mr-1"></i> @item.HoraCita.ToString(@"hh\:mm")</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 text-xs font-semibold rounded-full @(item.Estado == "Confirmada" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800")">
+                <span class="px-2 py-1 text-xs font-semibold rounded-full @(item.Estado == "Confirmada" ? "bg-green-500/10 text-green-700 dark:text-green-300" : "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300")">
                     @item.Estado
                 </span>
             </div>
@@ -48,7 +48,7 @@
                     <i class="fa-solid fa-bell-concierge text-gray-400 mt-1 w-5 text-center"></i>
                     <div>
                         <p class="text-xs text-gray-400 uppercase font-semibold">Servicio</p>
-                        <p class="text-sm text-gray-800 font-medium">@(item.Servicio?.Nombre ?? "N/A")</p>
+                        <p class="text-sm text-gray-800 dark:text-gray-200 font-medium">@(item.Servicio?.Nombre ?? "N/A")</p>
                     </div>
                 </div>
                 
@@ -58,7 +58,7 @@
                         <i class="fa-solid fa-user text-gray-400 mt-1 w-5 text-center"></i>
                         <div>
                             <p class="text-xs text-gray-400 uppercase font-semibold">Cliente</p>
-                            <p class="text-sm text-gray-800 font-medium">@(item.Cliente?.Nombre ?? "N/A")</p>
+                            <p class="text-sm text-gray-800 dark:text-gray-200 font-medium">@(item.Cliente?.Nombre ?? "N/A")</p>
                         </div>
                     </div>
                 }
@@ -69,7 +69,7 @@
                         <i class="fa-solid fa-scissors text-gray-400 mt-1 w-5 text-center"></i>
                         <div>
                             <p class="text-xs text-gray-400 uppercase font-semibold">Estilista</p>
-                            <p class="text-sm text-gray-800 font-medium">@(item.Estilista?.Nombre ?? "N/A") @(item.Estilista?.Apellido ?? "")</p>
+                            <p class="text-sm text-gray-800 dark:text-gray-200 font-medium">@(item.Estilista?.Nombre ?? "N/A") @(item.Estilista?.Apellido ?? "")</p>
                         </div>
                     </div>
                 }

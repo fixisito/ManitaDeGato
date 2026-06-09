@@ -16,22 +16,22 @@
 
 @if (TempData["MensajeExito"] != null)
 {
-    <div class="mb-6 bg-green-50 border-l-4 border-green-500 p-4 rounded-md shadow-sm flex items-start gap-3">
+    <div class="mb-6 bg-green-500/10 border-l-4 border-green-500 p-4 rounded-md shadow-sm flex items-start gap-3">
         <i class="fa-solid fa-envelope-circle-check text-green-500 text-xl mt-0.5"></i>
         <div>
-            <h3 class="text-sm font-medium text-green-800">Notificación de Sistema</h3>
-            <p class="text-sm text-green-700 mt-1">@TempData["MensajeExito"]</p>
+            <h3 class="text-sm font-medium text-green-800 dark:text-green-300">Notificación de Sistema</h3>
+            <p class="text-sm text-green-700 dark:text-green-300 mt-1">@TempData["MensajeExito"]</p>
         </div>
     </div>
 }
 
 @if (TempData["MensajeError"] != null)
 {
-    <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-md shadow-sm flex items-start gap-3">
+    <div class="mb-6 bg-red-500/10 border-l-4 border-red-500 p-4 rounded-md shadow-sm flex items-start gap-3">
         <i class="fa-solid fa-circle-exclamation text-red-500 text-xl mt-0.5"></i>
         <div>
-            <h3 class="text-sm font-medium text-red-800">Error</h3>
-            <p class="text-sm text-red-700 mt-1">@TempData["MensajeError"]</p>
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Error</h3>
+            <p class="text-sm text-red-700 dark:text-red-300 mt-1">@TempData["MensajeError"]</p>
         </div>
     </div>
 }
@@ -41,7 +41,7 @@
     {
         <div class="neo-card rounded-2xl shadow-sm border border-gray-800 p-6 hover:shadow-md transition-shadow">
             <div class="flex items-center gap-4 mb-4">
-                <div class="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center text-pink-500 text-2xl font-bold">
+                <div class="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 text-2xl font-bold">
                     @(item.Nombre.Substring(0,1))@(item.Apellido?.Substring(0,1))
                 </div>
                 <div>
@@ -62,7 +62,7 @@
             </div>
 
             <div class="border-t border-gray-800 pt-4 mt-4 flex justify-end gap-2">
-                <a asp-action="Edit" asp-route-id="@item.Id" class="text-sm text-pink-600 hover:text-pink-800 font-medium flex items-center gap-1 transition-colors px-2 py-1">
+                <a asp-action="Edit" asp-route-id="@item.Id" class="text-sm text-pink-600 hover:text-pink-800 dark:hover:text-pink-400 font-medium flex items-center gap-1 transition-colors px-2 py-1">
                     <i class="fa-solid fa-pen"></i> Editar
                 </a>
                 
@@ -72,6 +72,15 @@
                     </button>
                 </form>
             </div>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="col-span-full text-center py-12 neo-card rounded-xl border border-dashed border-gray-300">
+            <i class="fa-solid fa-user-slash text-gray-300 text-5xl mb-3"></i>
+            <h3 class="text-lg font-medium text-white">No hay estilistas registrados</h3>
+            <p class="mt-1 text-gray-400">Aún no se ha agregado ningún estilista al sistema.</p>
         </div>
     }
 </div>

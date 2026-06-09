@@ -6,15 +6,15 @@
 }
 
 <div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 neo-card p-10 rounded-2xl shadow-xl border border-pink-100 relative overflow-hidden">
+    <div class="max-w-md w-full space-y-8 neo-card p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
         
-        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-100 opacity-50"></div>
-        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-200 opacity-50"></div>
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
 
         <div class="relative z-10">
             <div class="text-center">
                 <i class="fa-solid fa-user-plus text-pink-500 text-5xl mb-4"></i>
-                <h2 class="mt-2 text-3xl font-extrabold text-white tracking-tight">
+                <h2 class="mt-2 text-3xl font-black text-white tracking-tight">
                     Crea tu cuenta
                 </h2>
                 <p class="mt-2 text-sm text-gray-400">
@@ -24,8 +24,8 @@
 
             @if (ViewBag.Error != null)
             {
-                <div class="mt-4 bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
-                    <p class="text-sm text-red-700 font-medium">@ViewBag.Error</p>
+                <div class="mt-4 border-l-2 border-red-500 pl-4 py-2 bg-red-500/10">
+                    <p class="text-xs font-mono text-red-400 tracking-wider">[ERROR] @ViewBag.Error</p>
                 </div>
             }
 
@@ -75,7 +75,7 @@
             </form>
 
             <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
+                <p class="text-sm text-gray-600 dark:text-gray-400">
                     ¿Ya tienes cuenta? 
                     <a asp-action="Login" class="font-medium text-pink-600 hover:text-pink-500">Inicia Sesión</a>
                 </p>
