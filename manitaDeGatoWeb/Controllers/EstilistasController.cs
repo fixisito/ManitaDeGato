@@ -118,17 +118,24 @@ namespace manitaDeGatoWeb.Controllers
 
                 var pwdPlana = estilista.Contraseña;
 
-                await _dbHelper.ExecuteNonQueryAsync(
-                    "INSERT INTO estilistas (nombre, apellido, rut, telefono, usuario, contraseña) VALUES (@nombre, @apellido, @rut, '', @usuario, @contraseña)",
-                    new SqlParameter("@nombre", estilista.Nombre),
-                    new SqlParameter("@apellido", estilista.Apellido),
-                    new SqlParameter("@rut", estilista.Rut),
-                    new SqlParameter("@usuario", estilista.Usuario),
-                    new SqlParameter("@contraseña", estilista.Contraseña));
+                try
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "INSERT INTO estilistas (nombre, apellido, rut, telefono, usuario, contraseña) VALUES (@nombre, @apellido, @rut, '', @usuario, @contraseña)",
+                        new SqlParameter("@nombre", estilista.Nombre),
+                        new SqlParameter("@apellido", estilista.Apellido),
+                        new SqlParameter("@rut", estilista.Rut),
+                        new SqlParameter("@usuario", estilista.Usuario),
+                        new SqlParameter("@contraseña", estilista.Contraseña));
 
-                TempData["MensajeExito"] = $"¡Estilista registrado con éxito! Se ha enviado un correo simulado a {estilista.Nombre} con su usuario ({estilista.Usuario}) y contraseña ({pwdPlana}).";
-
-                return RedirectToAction(nameof(Index));
+                    TempData["MensajeExito"] = $"¡Estilista {estilista.Nombre} registrado con éxito! Su contraseña inicial es: {pwdPlana}";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (SqlException ex) when (ex.Number == 2627)
+                {
+                    ViewBag.Error = "El RUT ingresado ya se encuentra registrado en el sistema.";
+                    return View(estilista);
+                }
             }
             return View(estilista);
         }
@@ -187,17 +194,25 @@ namespace manitaDeGatoWeb.Controllers
                     passwordToSave = estilista.Contraseña;
                 }
 
-                await _dbHelper.ExecuteNonQueryAsync(
-                    "UPDATE estilistas SET nombre = @nombre, apellido = @apellido, rut = @rut, usuario = @usuario, contraseña = @contraseña WHERE Id = @id",
-                    new SqlParameter("@nombre", estilista.Nombre),
-                    new SqlParameter("@apellido", estilista.Apellido),
-                    new SqlParameter("@rut", estilista.Rut),
-                    new SqlParameter("@usuario", estilista.Usuario),
-                    new SqlParameter("@contraseña", passwordToSave),
-                    new SqlParameter("@id", id));
+                try
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE estilistas SET nombre = @nombre, apellido = @apellido, rut = @rut, usuario = @usuario, contraseña = @contraseña WHERE Id = @id",
+                        new SqlParameter("@nombre", estilista.Nombre),
+                        new SqlParameter("@apellido", estilista.Apellido),
+                        new SqlParameter("@rut", estilista.Rut),
+                        new SqlParameter("@usuario", estilista.Usuario),
+                        new SqlParameter("@contraseña", passwordToSave),
+                        new SqlParameter("@id", id));
 
-                TempData["MensajeExito"] = $"Datos del estilista {estilista.Nombre} actualizados correctamente.";
-                return RedirectToAction(nameof(Index));
+                    TempData["MensajeExito"] = $"Datos del estilista {estilista.Nombre} actualizados correctamente.";
+                    return RedirectToAction(nameof(Index));
+                }
+                catch (SqlException ex) when (ex.Number == 2627)
+                {
+                    ViewBag.Error = "El RUT ingresado ya pertenece a otro estilista en el sistema.";
+                    return View(estilista);
+                }
             }
             return View(estilista);
         }
