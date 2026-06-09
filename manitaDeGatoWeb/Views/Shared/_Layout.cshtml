@@ -1,6 +1,15 @@
 <!DOCTYPE html>
-<html lang="es" class="dark">
+<html lang="es">
 <head>
+    <script>
+        // Inicializar tema antes de renderizar para evitar parpadeo
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (savedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Manita De Gato</title>
@@ -67,6 +76,7 @@
             box-shadow: 0 0 20px rgba(236, 72, 153, 0.1);
         }
         .text-white { color: var(--text-color) !important; }
+        .text-real-white, .hover\:text-real-white:hover { color: #ffffff !important; }
         .text-gray-300, .text-gray-400 { color: var(--icon-color) !important; }
 
         /* Glassmorphism Dock */
@@ -262,27 +272,35 @@
         // Lógica del Toggle de Tema
         $(document).ready(function() {
             const body = document.body;
+            const html = document.documentElement;
             const themeIcon = document.getElementById('theme-icon');
             
-            // Revisa si hay un tema guardado en localStorage
-            const savedTheme = localStorage.getItem('theme');
+            const savedTheme = localStorage.getItem('theme') || 'light';
             if (savedTheme === 'light') {
                 body.classList.add('light-mode');
-                themeIcon.classList.remove('fa-sun', 'text-yellow-500');
-                themeIcon.classList.add('fa-moon', 'text-blue-500');
+                html.classList.remove('dark');
+                if (themeIcon) {
+                    themeIcon.className = 'fa-solid fa-moon text-xl text-blue-500';
+                }
+            } else {
+                body.classList.remove('light-mode');
+                html.classList.add('dark');
+                if (themeIcon) {
+                    themeIcon.className = 'fa-solid fa-sun text-xl text-yellow-500';
+                }
             }
 
             $('#theme-toggle').click(function() {
-                body.classList.toggle('light-mode');
-                
                 if (body.classList.contains('light-mode')) {
-                    localStorage.setItem('theme', 'light');
-                    themeIcon.classList.remove('fa-sun', 'text-yellow-500');
-                    themeIcon.classList.add('fa-moon', 'text-blue-500');
-                } else {
+                    body.classList.remove('light-mode');
+                    html.classList.add('dark');
                     localStorage.setItem('theme', 'dark');
-                    themeIcon.classList.remove('fa-moon', 'text-blue-500');
-                    themeIcon.classList.add('fa-sun', 'text-yellow-500');
+                    if (themeIcon) themeIcon.className = 'fa-solid fa-sun text-xl text-yellow-500';
+                } else {
+                    body.classList.add('light-mode');
+                    html.classList.remove('dark');
+                    localStorage.setItem('theme', 'light');
+                    if (themeIcon) themeIcon.className = 'fa-solid fa-moon text-xl text-blue-500';
                 }
             });
         });

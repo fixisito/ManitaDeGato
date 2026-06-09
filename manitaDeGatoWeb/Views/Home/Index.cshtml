@@ -3,7 +3,7 @@
 }
 
 <div class="relative rounded-3xl overflow-hidden neo-card mb-12 p-8 md:p-16">
-    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-900/200/20 text-pink-400 text-sm font-mono tracking-widest border border-pink-500/30 mb-6">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 text-sm font-mono tracking-widest border border-pink-500/30 mb-6">
         <i class="fa-solid fa-sparkles"></i>
         <span>V2.1 no confiable la verdad (en testeo)</span>
     </div>
@@ -22,7 +22,7 @@
     @if (!(User.Identity != null && User.Identity.IsAuthenticated))
     {
         <div class="flex flex-wrap gap-4 mt-8">
-            <a asp-controller="Auth" asp-action="Login" class="px-8 py-4 bg-pink-600 text-white font-black tracking-widest uppercase hover:bg-pink-900/200 transition-colors shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+            <a asp-controller="Auth" asp-action="Login" class="px-8 py-4 bg-pink-600 text-real-white font-black tracking-widest uppercase hover:bg-pink-700 transition-colors shadow-[0_0_20px_rgba(236,72,153,0.3)]">
                 INICIAR SESIÓN <i class="fa-solid fa-arrow-right ml-2"></i>
             </a>
             <a asp-controller="Auth" asp-action="Registro" class="px-8 py-4 bg-transparent border border-gray-600 text-gray-300 font-black tracking-widest uppercase hover:border-white hover:text-white transition-colors">
