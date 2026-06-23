@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "Pago Exitoso";
+    var fechaCita = (DateTime)ViewBag.FechaCita;
+    var horaCita = (TimeSpan)ViewBag.HoraCita;
+    var amount = (int)ViewBag.Amount;
+    var transDate = (DateTime)ViewBag.TransDate;
+    
+    // Mapear tipos de pago de Webpay
+    string tipoPagoStr = ViewBag.PaymentType switch
+    {
+        "VD" => "Tarjeta de Débito (Redcompra)",
+        "VN" => "Tarjeta de Crédito (Sin Cuotas)",
+        "VC" => "Tarjeta de Crédito (Cuotas Normales)",
+        "SI" => "Tarjeta de Crédito (3 Cuotas Sin Interés)",
+        "S2" => "Tarjeta de Crédito (2 Cuotas Sin Interés)",
+        "NC" => "Tarjeta de Crédito (N Cuotas Sin Interés)",
+        "VP" => "Tarjeta de Prepago",
+        _ => "Tarjeta Bancaria"
+    };
+}
+
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-6 neo-card p-8 sm:p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
+        <!-- Glows de fondo decorativos -->
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
+        
+        <div class="relative z-10 text-center space-y-6">
+            <!-- Icono Animado Exitoso -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-pink-500/10 text-pink-500 border border-pink-500/30 mb-2">
+                <i class="fa-solid fa-circle-check text-5xl animate-pulse"></i>
+            </div>
+
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">¡Pago Confirmado!</h1>
+                <p class="text-sm text-gray-400 mt-1">Tu cita ha sido agendada y pagada con éxito.</p>
+            </div>
+
+            <!-- Separador Rosado -->
+            <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-pink-500/30"></div>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                    <span class="px-4 text-pink-500 dark:text-pink-400 rounded border border-pink-500/20 py-1 shadow-sm" style="background-color: var(--bg-color)">
+                        Detalles de la Cita
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detalle de la Cita -->
+            <div class="bg-gray-800/30 rounded-xl p-5 border border-gray-700/50 text-left space-y-3.5">
+                <div class="flex justify-between items-start border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Servicio</span>
+                    <span class="text-white font-bold text-base text-right">@ViewBag.ServicioNombre</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Profesional</span>
+                    <span class="text-white font-semibold text-sm">@ViewBag.EstilistaNombre</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Fecha y Hora</span>
+                    <span class="text-white font-semibold text-sm">@fechaCita.ToString("dd/MM/yyyy") a las @horaCita.ToString(@"hh\:mm") hrs</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-sm font-medium">Duración estimada</span>
+                    <span class="text-white font-semibold text-sm">@ViewBag.ServicioDuracion minutos</span>
+                </div>
+            </div>
+
+            <!-- Separador Rosado -->
+            <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-pink-500/30"></div>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                    <span class="px-4 text-pink-500 dark:text-pink-400 rounded border border-pink-500/20 py-1 shadow-sm" style="background-color: var(--bg-color)">
+                        Comprobante Webpay Plus
+                    </span>
+                </div>
+            </div>
+
+            <!-- Detalle de Pago -->
+            <div class="bg-gray-800/30 rounded-xl p-5 border border-gray-700/50 text-left space-y-3.5">
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Orden de Compra (Cita ID)</span>
+                    <span class="text-gray-300 font-mono text-sm">#@ViewBag.CitaId</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Monto Pagado (c/IVA)</span>
+                    <span class="text-pink-500 font-black text-lg">@amount.ToString("C0", new System.Globalization.CultureInfo("es-CL"))</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Código de Autorización</span>
+                    <span class="text-gray-300 font-mono text-sm">@ViewBag.AuthorizationCode</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Tipo de Pago</span>
+                    <span class="text-gray-300 text-sm">@tipoPagoStr</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-700/50 pb-2">
+                    <span class="text-gray-400 text-sm font-medium">Número de Tarjeta</span>
+                    <span class="text-gray-300 font-mono text-sm">•••• •••• •••• @ViewBag.CardNumber</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-sm font-medium">Fecha y Hora Transacción</span>
+                    <span class="text-gray-300 text-sm">@transDate.ToString("dd/MM/yyyy HH:mm:ss")</span>
+                </div>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                <a asp-action="Historial" class="w-full sm:w-auto px-6 py-3.5 bg-pink-600 hover:bg-pink-700 text-real-white text-base font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    Ver mis citas <i class="fa-solid fa-calendar text-sm"></i>
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="w-full sm:w-auto px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-500/10 font-semibold text-base flex items-center justify-center gap-2">
+                    Ir al Inicio <i class="fa-solid fa-house text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

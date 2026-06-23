@@ -9,6 +9,9 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using manitaDeGatoWeb.Models;
 using manitaDeGatoWeb.Data;
+using Transbank.Common;
+using Transbank.Webpay.Common;
+using Transbank.Webpay.WebpayPlus;
 
 namespace manitaDeGatoWeb.Controllers
 {
@@ -139,22 +142,78 @@ namespace manitaDeGatoWeb.Controllers
                 var esDisponible = await ValidarCitaDisponible(cita.IdEstilista, cita.IdServicio, cita.FechaCita, cita.HoraCita);
                 if (!esDisponible)
                 {
-                    ModelState.AddModelError("", "El horario o fecha seleccionados ya no están disponibles. Por favor, selecciona otro bloque.");
+                    ModelState.AddModelError("", "El horario o fecha seleccionados ya no estAn disponibles. Por favor, selecciona otro bloque.");
                     await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
                     return View(cita);
                 }
 
                 var clienteId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-                await _dbHelper.ExecuteNonQueryAsync(
+
+                // Obtener el precio neto del servicio
+                var precioRaw = await _dbHelper.ExecuteScalarAsync(
+                    "SELECT precio FROM servicios WHERE Id = @servicioId",
+                    new SqlParameter("@servicioId", cita.IdServicio));
+
+                if (precioRaw == null)
+                {
+                    ModelState.AddModelError("", "El servicio seleccionado no es válido.");
+                    await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
+                    return View(cita);
+                }
+
+                decimal precioNeto = Convert.ToDecimal(precioRaw);
+                int precioTotalConIva = (int)Math.Round(precioNeto * 1.19m);
+
+                // Insertar cita en estado 'Pendiente' y recuperar el ID generado
+                var citaIdObj = await _dbHelper.ExecuteScalarAsync(
                     @"INSERT INTO citas (IdCliente, IdServicio, IdEstilista, FechaCita, HoraCita, estado) 
-                      VALUES (@clienteId, @servicioId, @estilistaId, @fecha, @hora, 'Confirmada')",
+                      VALUES (@clienteId, @servicioId, @estilistaId, @fecha, @hora, 'Pendiente');
+                      SELECT SCOPE_IDENTITY();",
                     new SqlParameter("@clienteId", clienteId),
                     new SqlParameter("@servicioId", cita.IdServicio),
                     new SqlParameter("@estilistaId", cita.IdEstilista),
                     new SqlParameter("@fecha", cita.FechaCita),
                     new SqlParameter("@hora", cita.HoraCita));
 
-                return RedirectToAction(nameof(Historial));
+                if (citaIdObj == null)
+                {
+                    ModelState.AddModelError("", "Ocurrió un error al registrar la cita.");
+                    await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
+                    return View(cita);
+                }
+
+                int citaId = Convert.ToInt32(citaIdObj);
+
+                // Crear transacción en Transbank Webpay Plus
+                try
+                {
+                    var returnUrl = Url.Action("PagoRetorno", "Citas", null, Request.Scheme);
+                    var tx = new Transaction(new Options(
+                        IntegrationCommerceCodes.WEBPAY_PLUS,
+                        IntegrationApiKeys.WEBPAY,
+                        WebpayIntegrationType.Test
+                    ));
+                    var response = tx.Create(
+                        buyOrder: citaId.ToString(),
+                        sessionId: "session-" + citaId,
+                        amount: precioTotalConIva,
+                        returnUrl: returnUrl!
+                    );
+
+                    // Redirigir al portal de Webpay Plus de Transbank
+                    return Redirect($"{response.Url}?token_ws={response.Token}");
+                }
+                catch (Exception ex)
+                {
+                    // Si falla la llamada a Transbank, dejamos la cita como 'Fallida'
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE citas SET estado = 'Fallida' WHERE Id = @id",
+                        new SqlParameter("@id", citaId));
+
+                    ModelState.AddModelError("", "Error al conectar con el servicio de pagos: " + ex.Message);
+                    await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
+                    return View(cita);
+                }
             }
             await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
             return View(cita);
@@ -486,6 +545,118 @@ namespace manitaDeGatoWeb.Controllers
 
             if (isCliente) return RedirectToAction(nameof(Historial));
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET/POST: Citas/PagoRetorno
+        [AllowAnonymous]
+        public async Task<IActionResult> PagoRetorno(string token_ws, string TBK_TOKEN, string TBK_ORDEN_COMPRA, string TBK_ID_SESION)
+        {
+            if (!string.IsNullOrEmpty(TBK_TOKEN) || string.IsNullOrEmpty(token_ws))
+            {
+                string orderIdStr = TBK_ORDEN_COMPRA ?? TBK_ID_SESION?.Replace("session-", "");
+                if (int.TryParse(orderIdStr, out int citaIdCancelada))
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE citas SET estado = 'Cancelada' WHERE Id = @id AND estado = 'Pendiente'",
+                        new SqlParameter("@id", citaIdCancelada));
+                }
+
+                return RedirectToAction(nameof(PagoFallido), new { mensaje = "El pago fue anulado por el usuario." });
+            }
+
+            try
+            {
+                var tx = new Transaction(new Options(
+                    IntegrationCommerceCodes.WEBPAY_PLUS,
+                    IntegrationApiKeys.WEBPAY,
+                    WebpayIntegrationType.Test
+                ));
+                var response = tx.Commit(token_ws);
+
+                int citaId = Convert.ToInt32(response.BuyOrder);
+
+                if (response.ResponseCode == 0 && response.Status == "AUTHORIZED")
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE citas SET estado = 'Confirmada' WHERE Id = @id",
+                        new SqlParameter("@id", citaId));
+
+                    return RedirectToAction(nameof(PagoExitoso), new 
+                    { 
+                        citaId = citaId,
+                        authorizationCode = response.AuthorizationCode,
+                        amount = response.Amount,
+                        cardNumber = response.CardDetail?.CardNumber,
+                        paymentType = response.PaymentTypeCode,
+                        transDate = response.TransactionDate
+                    });
+                }
+                else
+                {
+                    await _dbHelper.ExecuteNonQueryAsync(
+                        "UPDATE citas SET estado = 'Fallida' WHERE Id = @id",
+                        new SqlParameter("@id", citaId));
+
+                    string errorMsg = response.ResponseCode switch
+                    {
+                        -1 => "Rechazo de transacción.",
+                        -2 => "Transacción rechazada por el emisor.",
+                        -3 => "Error en transacción.",
+                        -4 => "Rechazada por emisor.",
+                        -5 => "Rechazada por emisor.",
+                        _ => "Transacción rechazada por Transbank."
+                    };
+
+                    return RedirectToAction(nameof(PagoFallido), new { mensaje = errorMsg });
+                }
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(PagoFallido), new { mensaje = "Ocurrió un error al procesar el pago: " + ex.Message });
+            }
+        }
+
+        // GET: Citas/PagoExitoso
+        [Authorize(Roles = "Cliente")]
+        public async Task<IActionResult> PagoExitoso(int citaId, string authorizationCode, int amount, string cardNumber, string paymentType, DateTime? transDate)
+        {
+            var dt = await _dbHelper.ExecuteQueryAsync(
+                @"SELECT c.Id, c.FechaCita, c.HoraCita, s.nombre AS ServicioNombre, s.duracion AS ServicioDuracion, 
+                         e.nombre + ' ' + e.apellido AS EstilistaNombre
+                  FROM citas c
+                  INNER JOIN servicios s ON c.IdServicio = s.Id
+                  INNER JOIN estilistas e ON c.IdEstilista = e.Id
+                  WHERE c.Id = @citaId",
+                new SqlParameter("@citaId", citaId));
+
+            if (dt.Rows.Count == 0)
+            {
+                return NotFound();
+            }
+
+            var row = dt.Rows[0];
+            ViewBag.CitaId = row["Id"];
+            ViewBag.FechaCita = Convert.ToDateTime(row["FechaCita"]);
+            ViewBag.HoraCita = (TimeSpan)row["HoraCita"];
+            ViewBag.ServicioNombre = row["ServicioNombre"].ToString();
+            ViewBag.ServicioDuracion = row["ServicioDuracion"];
+            ViewBag.EstilistaNombre = row["EstilistaNombre"].ToString();
+
+            ViewBag.AuthorizationCode = authorizationCode;
+            ViewBag.Amount = amount;
+            ViewBag.CardNumber = cardNumber;
+            ViewBag.PaymentType = paymentType;
+            ViewBag.TransDate = transDate ?? DateTime.Now;
+
+            return View();
+        }
+
+        // GET: Citas/PagoFallido
+        [Authorize(Roles = "Cliente")]
+        public IActionResult PagoFallido(string mensaje)
+        {
+            ViewBag.ErrorMessage = mensaje;
+            return View();
         }
 
         private async Task CargarServiciosYEstilistasEnViewBag(int? selectedServicioId, int? selectedEstilistaId)

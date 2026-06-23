@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Pago Fallido";
+}
+
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-6 neo-card p-8 sm:p-10 rounded-2xl shadow-xl border border-red-500/20 relative overflow-hidden">
+        <!-- Glows de fondo decorativos -->
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-red-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-red-500/20 opacity-50"></div>
+        
+        <div class="relative z-10 text-center space-y-6">
+            <!-- Icono Animado Fallido -->
+            <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/10 text-red-500 border border-red-500/30 mb-2">
+                <i class="fa-solid fa-triangle-exclamation text-5xl animate-pulse"></i>
+            </div>
+
+            <div>
+                <h1 class="text-3xl sm:text-4xl font-black text-white tracking-tight">Pago No Procesado</h1>
+                <p class="text-sm text-gray-400 mt-1">La transacción con Webpay Plus no pudo completarse.</p>
+            </div>
+
+            <!-- Separador Rosado -->
+            <div class="relative py-2">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-red-500/30"></div>
+                </div>
+                <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                    <span class="px-4 text-red-500 dark:text-red-400 rounded border border-red-500/20 py-1 shadow-sm" style="background-color: var(--bg-color)">
+                        Detalles del Error
+                    </span>
+                </div>
+            </div>
+
+            <!-- Caja de Mensaje de Error -->
+            <div class="bg-gray-800/30 rounded-xl p-5 border border-red-500/10 text-center">
+                <p class="text-gray-300 font-semibold text-base">
+                    @(!string.IsNullOrEmpty(ViewBag.ErrorMessage) ? ViewBag.ErrorMessage : "La transacción fue declinada por la entidad de pago o cancelada.")
+                </p>
+                <p class="text-xs text-gray-500 mt-2">
+                    Si el dinero fue descontado de tu cuenta bancaria, la devolución se realizará de forma automática en los próximos minutos.
+                </p>
+            </div>
+
+            <!-- Botones de Acción -->
+            <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
+                <a asp-action="Agendar" class="w-full sm:w-auto px-6 py-3.5 bg-red-600 hover:bg-red-700 text-real-white text-base font-bold rounded-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+                    Volver a Intentar <i class="fa-solid fa-rotate text-sm"></i>
+                </a>
+                <a asp-action="Historial" class="w-full sm:w-auto px-6 py-3 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-500/10 font-semibold text-base flex items-center justify-center gap-2">
+                    Ver mis citas <i class="fa-solid fa-calendar text-sm"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
