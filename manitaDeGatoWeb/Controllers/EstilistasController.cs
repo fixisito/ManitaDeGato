@@ -236,19 +236,81 @@ namespace manitaDeGatoWeb.Controllers
             if (dt.Rows.Count > 0)
             {
                 string nombre = dt.Rows[0]["nombre"].ToString() ?? string.Empty;
-                try
+                using (var connection = _dbHelper.GetConnection())
                 {
-                    await _dbHelper.ExecuteNonQueryAsync(
-                        "DELETE FROM estilistas WHERE Id = @id",
-                        new SqlParameter("@id", id));
+                    await connection.OpenAsync();
+                    using (var transaction = connection.BeginTransaction())
+                    {
+                        try
+                        {
+                            // 1. Eliminar de disponibilidad
+                            string deleteDisp = "DELETE FROM disponibilidad WHERE IdEstilista = @id";
+                            using (var cmd = new SqlCommand(deleteDisp, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
 
-                    TempData["MensajeExito"] = $"El estilista {nombre} ha sido eliminado del sistema.";
-                }
-                catch (SqlException ex) when (ex.Number == 547)
-                {
-                    TempData["MensajeError"] = $"No se puede eliminar a {nombre} porque tiene citas programadas o historial registrado. Por ahora la base de datos restringe esta acción para proteger tu historial.";
+                            // 2. Eliminar de estilista_categoria
+                            string deleteEstCat = "DELETE FROM estilista_categoria WHERE IdEstilista = @id";
+                            using (var cmd = new SqlCommand(deleteEstCat, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            // 3. Eliminar de serviciosPorEstilista para el estilista
+                            string deleteServEst = "DELETE FROM serviciosPorEstilista WHERE IdEstilista = @id";
+                            using (var cmd = new SqlCommand(deleteServEst, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            // 4. Eliminar de citas asociadas a este estilista
+                            string deleteCitas = "DELETE FROM citas WHERE IdEstilista = @id";
+                            using (var cmd = new SqlCommand(deleteCitas, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            // 5. Eliminar de serviciosPorEstilista para los servicios propios exclusivos de este estilista
+                            string deleteServsEstPivot = "DELETE FROM serviciosPorEstilista WHERE IdServicio IN (SELECT Id FROM servicios WHERE IdEstilista = @id)";
+                            using (var cmd = new SqlCommand(deleteServsEstPivot, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            // 6. Eliminar servicios exclusivos de este estilista
+                            string deleteServicios = "DELETE FROM servicios WHERE IdEstilista = @id";
+                            using (var cmd = new SqlCommand(deleteServicios, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            // 7. Eliminar el estilista
+                            string deleteEstilista = "DELETE FROM estilistas WHERE Id = @id";
+                            using (var cmd = new SqlCommand(deleteEstilista, connection, transaction))
+                            {
+                                cmd.Parameters.AddWithValue("@id", id);
+                                await cmd.ExecuteNonQueryAsync();
+                            }
+
+                            transaction.Commit();
+                            TempData["MensajeExito"] = $"El estilista {nombre} y todos sus horarios, servicios exclusivos y citas asociadas se han eliminado en cascada correctamente.";
+                        }
+                        catch (Exception ex)
+                        {
+                            transaction.Rollback();
+                            TempData["MensajeError"] = $"Error al eliminar al estilista {nombre} en cascada: {ex.Message}";
+                        }
+                    }
                 }
             }
+
             return RedirectToAction(nameof(Index));
         }
 
