@@ -13,6 +13,7 @@ var connectionString = rawConnectionString.Replace("|DataDirectory|", dataDirect
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddSingleton(new DataBaseHelper(connectionString));
+builder.Services.AddTransient<manitaDeGatoWeb.Services.EmailService>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>

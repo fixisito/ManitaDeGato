@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using manitaDeGatoWeb.Models;
 using manitaDeGatoWeb.Data;
+using manitaDeGatoWeb.Services;
 using Transbank.Common;
 using Transbank.Webpay.Common;
 using Transbank.Webpay.WebpayPlus;
@@ -19,10 +20,12 @@ namespace manitaDeGatoWeb.Controllers
     public class CitasController : Controller
     {
         private readonly DataBaseHelper _dbHelper;
+        private readonly EmailService _emailService;
 
-        public CitasController(DataBaseHelper dbHelper)
+        public CitasController(DataBaseHelper dbHelper, EmailService emailService)
         {
             _dbHelper = dbHelper;
+            _emailService = emailService;
         }
 
         // GET: Citas (Admin)
@@ -580,6 +583,130 @@ namespace manitaDeGatoWeb.Controllers
                     await _dbHelper.ExecuteNonQueryAsync(
                         "UPDATE citas SET estado = 'Confirmada' WHERE Id = @id",
                         new SqlParameter("@id", citaId));
+
+                    // Obtener datos detallados de la cita para el correo
+                    try
+                    {
+                        var dtCorreo = await _dbHelper.ExecuteQueryAsync(
+                            @"SELECT c.FechaCita, c.HoraCita, s.nombre AS ServicioNombre, s.precio AS ServicioPrecio,
+                                     cl.nombre + ' ' + cl.apellido AS ClienteNombre, cl.correo AS ClienteCorreo,
+                                     e.nombre + ' ' + e.apellido AS EstilistaNombre, e.correo AS EstilistaCorreo
+                              FROM citas c
+                              INNER JOIN servicios s ON c.IdServicio = s.Id
+                              INNER JOIN clientes cl ON c.IdCliente = cl.Id
+                              INNER JOIN estilistas e ON c.IdEstilista = e.Id
+                              WHERE c.Id = @citaId",
+                            new SqlParameter("@citaId", citaId));
+
+                        if (dtCorreo.Rows.Count > 0)
+                        {
+                            var row = dtCorreo.Rows[0];
+                            var fechaC = Convert.ToDateTime(row["FechaCita"]).ToString("dd/MM/yyyy");
+                            var horaC = ((TimeSpan)row["HoraCita"]).ToString(@"hh\:mm");
+                            var servicioN = row["ServicioNombre"].ToString();
+                            var estilistaN = row["EstilistaNombre"].ToString();
+                            var clienteN = row["ClienteNombre"].ToString();
+                            
+                            var clienteEmail = row["ClienteCorreo"].ToString();
+                            var estilistaEmail = row["EstilistaCorreo"].ToString();
+
+                            var precioN = Convert.ToDecimal(row["ServicioPrecio"]);
+                            var precioIva = (int)Math.Round(precioN * 1.19m);
+                            var precioFormateado = precioIva.ToString("C0", new System.Globalization.CultureInfo("es-CL"));
+
+                            // Enviar correo al Cliente
+                            string clienteSubject = "Confirmación de tu Cita - Manita de Gato";
+                            string clienteBody = $@"
+                            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;'>
+                                <div style='text-align: center; border-bottom: 2px solid #db2777; padding-bottom: 15px; margin-bottom: 20px;'>
+                                    <h2 style='color: #db2777; margin: 0;'>Manita de Gato</h2>
+                                    <p style='color: #6b7280; font-size: 14px; margin: 5px 0 0 0;'>Centro de Estética & Belleza</p>
+                                </div>
+                                <h3 style='color: #111827;'>¡Hola {clienteN}!</h3>
+                                <p style='color: #374151; line-height: 1.6;'>Te confirmamos que hemos recibido tu pago a través de Webpay Plus y tu cita ha sido reservada con éxito. A continuación te presentamos el detalle:</p>
+                                
+                                <div style='background-color: #f9fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #db2777; margin: 20px 0;'>
+                                    <table style='width: 100%; border-collapse: collapse;'>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Servicio:</td>
+                                            <td style='padding: 6px 0; color: #111827; font-weight: bold;'>{servicioN}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Estilista:</td>
+                                            <td style='padding: 6px 0; color: #111827;'>{estilistaN}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Fecha:</td>
+                                            <td style='padding: 6px 0; color: #111827;'>{fechaC}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Hora:</td>
+                                            <td style='padding: 6px 0; color: #111827;'>{horaC} hrs</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Monto Pagado:</td>
+                                            <td style='padding: 6px 0; color: #db2777; font-weight: bold; font-size: 16px;'>{precioFormateado} (IVA Incluido)</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <p style='color: #374151; line-height: 1.6;'>Si necesitas reprogramar o cancelar, por favor ponte en contacto con nosotros al menos con 24 horas de anticipación.</p>
+                                <p style='color: #374151;'>¡Te esperamos en nuestro salón!</p>
+                                
+                                <div style='border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 25px; text-align: center; color: #9ca3af; font-size: 12px;'>
+                                    <p style='margin: 0;'>Manita de Gato Estética</p>
+                                    <p style='margin: 5px 0 0 0;'>Santiago, Chile</p>
+                                </div>
+                            </div>";
+
+                            _ = Task.Run(() => _emailService.EnviarCorreoAsync(clienteEmail!, clienteN!, clienteSubject, clienteBody));
+
+                            // Enviar correo al Estilista
+                            string estilistaSubject = "Nueva Cita Agendada - Manita de Gato";
+                            string estilistaBody = $@"
+                            <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff;'>
+                                <div style='text-align: center; border-bottom: 2px solid #db2777; padding-bottom: 15px; margin-bottom: 20px;'>
+                                    <h2 style='color: #db2777; margin: 0;'>Manita de Gato</h2>
+                                    <p style='color: #6b7280; font-size: 14px; margin: 5px 0 0 0;'>Notificación para Estilistas</p>
+                                </div>
+                                <h3 style='color: #111827;'>Hola {estilistaN},</h3>
+                                <p style='color: #374151; line-height: 1.6;'>Se ha agendado y confirmado un nuevo servicio en tu agenda a través del portal de pagos. Aquí tienes los detalles:</p>
+                                
+                                <div style='background-color: #f9fafb; padding: 15px; border-radius: 6px; border-left: 4px solid #db2777; margin: 20px 0;'>
+                                    <table style='width: 100%; border-collapse: collapse;'>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Cliente:</td>
+                                            <td style='padding: 6px 0; color: #111827; font-weight: bold;'>{clienteN}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Servicio:</td>
+                                            <td style='padding: 6px 0; color: #111827; font-weight: bold;'>{servicioN}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Fecha:</td>
+                                            <td style='padding: 6px 0; color: #111827;'>{fechaC}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style='padding: 6px 0; color: #6b7280; font-size: 14px;'>Hora:</td>
+                                            <td style='padding: 6px 0; color: #111827;'>{horaC} hrs</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                
+                                <p style='color: #374151; line-height: 1.6;'>Por favor, recuerda estar listo 10 minutos antes del bloque agendado.</p>
+                                
+                                <div style='border-top: 1px solid #e5e7eb; padding-top: 15px; margin-top: 25px; text-align: center; color: #9ca3af; font-size: 12px;'>
+                                    <p style='margin: 0;'>Manita de Gato Estética</p>
+                                </div>
+                            </div>";
+
+                            _ = Task.Run(() => _emailService.EnviarCorreoAsync(estilistaEmail!, estilistaN!, estilistaSubject, estilistaBody));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("[EmailService] Error al disparar hilos de correos: " + ex.Message);
+                    }
 
                     return RedirectToAction(nameof(PagoExitoso), new 
                     { 
