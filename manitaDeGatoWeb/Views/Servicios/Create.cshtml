@@ -41,9 +41,16 @@
                 </div>
 
                 <div>
-                    <label asp-for="Duracion" class="block text-sm font-medium text-gray-300 mb-1">Duración (minutos)</label>
+                    <label asp-for="Duracion" class="block text-sm font-medium text-gray-300 mb-1">Duración del Servicio</label>
                     <div class="relative">
-                        <input asp-for="Duracion" type="number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 pl-10" />
+                        <select asp-for="Duracion" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 pl-10">
+                            <option value="30">30 minutos (1 bloque)</option>
+                            <option value="60">60 minutos (2 bloques)</option>
+                            <option value="90">90 minutos (3 bloques)</option>
+                            <option value="120">120 minutos (4 bloques)</option>
+                            <option value="150">150 minutos (5 bloques)</option>
+                            <option value="180">180 minutos (6 bloques)</option>
+                        </select>
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fa-regular fa-clock text-gray-400"></i>
                         </div>

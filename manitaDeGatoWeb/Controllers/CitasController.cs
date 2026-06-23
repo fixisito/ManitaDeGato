@@ -136,6 +136,14 @@ namespace manitaDeGatoWeb.Controllers
         {
             if (ModelState.IsValid)
             {
+                var esDisponible = await ValidarCitaDisponible(cita.IdEstilista, cita.IdServicio, cita.FechaCita, cita.HoraCita);
+                if (!esDisponible)
+                {
+                    ModelState.AddModelError("", "El horario o fecha seleccionados ya no están disponibles. Por favor, selecciona otro bloque.");
+                    await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
+                    return View(cita);
+                }
+
                 var clienteId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
                 await _dbHelper.ExecuteNonQueryAsync(
                     @"INSERT INTO citas (IdCliente, IdServicio, IdEstilista, FechaCita, HoraCita, estado) 
@@ -150,6 +158,248 @@ namespace manitaDeGatoWeb.Controllers
             }
             await CargarServiciosYEstilistasEnViewBag(cita.IdServicio, cita.IdEstilista);
             return View(cita);
+        }
+
+        // GET: Citas/ObtenerHorasDisponibles
+        [HttpGet]
+        public async Task<IActionResult> ObtenerHorasDisponibles(int estilistaId, int servicioId, string fecha)
+        {
+            if (!DateTime.TryParse(fecha, out var dateParsed))
+            {
+                return BadRequest("Fecha inválida.");
+            }
+
+            var bloques = await ObtenerBloquesDisponiblesInterno(estilistaId, servicioId, dateParsed);
+            var result = new List<string>();
+            foreach (var b in bloques)
+            {
+                result.Add(b.ToString(@"hh\:mm"));
+            }
+
+            return Json(result);
+        }
+
+        // GET: Citas/ObtenerDisponibilidadMes
+        [HttpGet]
+        public async Task<IActionResult> ObtenerDisponibilidadMes(int estilistaId, int servicioId, int anio, int mes)
+        {
+            if (anio < DateTime.Today.Year || mes < 1 || mes > 12)
+            {
+                return BadRequest("Mes o año inválidos.");
+            }
+
+            var result = new List<object>();
+            int diasEnMes = DateTime.DaysInMonth(anio, mes);
+
+            // Obtener disponibilidad semanal
+            var dtDisp = await _dbHelper.ExecuteQueryAsync(
+                "SELECT dia FROM disponibilidad WHERE IdEstilista = @estilistaId",
+                new SqlParameter("@estilistaId", estilistaId));
+            
+            var diasTrabajados = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (DataRow row in dtDisp.Rows)
+            {
+                diasTrabajados.Add(row["dia"].ToString() ?? string.Empty);
+            }
+
+            for (int dia = 1; dia <= diasEnMes; dia++)
+            {
+                var fecha = new DateTime(anio, mes, dia);
+                
+                // Si la fecha es anterior a hoy, está inactiva
+                if (fecha < DateTime.Today)
+                {
+                    result.Add(new { fecha = fecha.ToString("yyyy-MM-dd"), estado = "inactivo" });
+                    continue;
+                }
+
+                // Si es fin de semana (Sábado o Domingo)
+                if (fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday)
+                {
+                    result.Add(new { fecha = fecha.ToString("yyyy-MM-dd"), estado = "inactivo" });
+                    continue;
+                }
+
+                // Si el estilista no trabaja este día de la semana
+                string nombreDia = ObtenerNombreDiaEspanol(fecha.DayOfWeek);
+                if (!diasTrabajados.Contains(nombreDia))
+                {
+                    result.Add(new { fecha = fecha.ToString("yyyy-MM-dd"), estado = "inactivo" });
+                    continue;
+                }
+
+                // Calcular bloques disponibles para ese día
+                var bloques = await ObtenerBloquesDisponiblesInterno(estilistaId, servicioId, fecha);
+
+                if (bloques.Count > 0)
+                {
+                    result.Add(new { fecha = fecha.ToString("yyyy-MM-dd"), estado = "disponible" });
+                }
+                else
+                {
+                    result.Add(new { fecha = fecha.ToString("yyyy-MM-dd"), estado = "agotado" });
+                }
+            }
+
+            return Json(result);
+        }
+
+        private string ObtenerNombreDiaEspanol(DayOfWeek day)
+        {
+            switch (day)
+            {
+                case DayOfWeek.Monday: return "Lunes";
+                case DayOfWeek.Tuesday: return "Martes";
+                case DayOfWeek.Wednesday: return "Miercoles";
+                case DayOfWeek.Thursday: return "Jueves";
+                case DayOfWeek.Friday: return "Viernes";
+                default: return "";
+            }
+        }
+
+        private async Task<bool> ValidarCitaDisponible(int estilistaId, int servicioId, DateTime fecha, TimeSpan hora)
+        {
+            if (fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return false;
+            }
+
+            if (fecha.Date < DateTime.Today)
+            {
+                return false;
+            }
+            if (fecha.Date == DateTime.Today && hora <= DateTime.Now.TimeOfDay)
+            {
+                return false;
+            }
+
+            var dtServ = await _dbHelper.ExecuteQueryAsync(
+                "SELECT duracion FROM servicios WHERE Id = @servicioId",
+                new SqlParameter("@servicioId", servicioId));
+            if (dtServ.Rows.Count == 0) return false;
+            int duracionServicio = Convert.ToInt32(dtServ.Rows[0]["duracion"]);
+
+            string nombreDia = ObtenerNombreDiaEspanol(fecha.DayOfWeek);
+            var dtDisp = await _dbHelper.ExecuteQueryAsync(
+                "SELECT hora_inicio, hora_fin FROM disponibilidad WHERE IdEstilista = @estilistaId AND dia = @dia",
+                new SqlParameter("@estilistaId", estilistaId),
+                new SqlParameter("@dia", nombreDia));
+            if (dtDisp.Rows.Count == 0) return false;
+
+            var rowDisp = dtDisp.Rows[0];
+            var horaInicio = (TimeSpan)rowDisp["hora_inicio"];
+            var horaFin = (TimeSpan)rowDisp["hora_fin"];
+
+            if (hora < horaInicio || (hora + TimeSpan.FromMinutes(duracionServicio)) > horaFin)
+            {
+                return false;
+            }
+
+            var dtCitas = await _dbHelper.ExecuteQueryAsync(
+                @"SELECT c.HoraCita, s.duracion 
+                  FROM citas c 
+                  JOIN servicios s ON c.IdServicio = s.Id 
+                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha",
+                new SqlParameter("@estilistaId", estilistaId),
+                new SqlParameter("@fecha", fecha.Date));
+
+            var S = hora;
+            var N = duracionServicio;
+
+            foreach (DataRow row in dtCitas.Rows)
+            {
+                var A = (TimeSpan)row["HoraCita"];
+                var D = Convert.ToInt32(row["duracion"]);
+
+                if (S < (A + TimeSpan.FromMinutes(D)) && (S + TimeSpan.FromMinutes(N)) > A)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<List<TimeSpan>> ObtenerBloquesDisponiblesInterno(int estilistaId, int servicioId, DateTime fecha)
+        {
+            var list = new List<TimeSpan>();
+            
+            if (fecha.DayOfWeek == DayOfWeek.Saturday || fecha.DayOfWeek == DayOfWeek.Sunday)
+            {
+                return list;
+            }
+
+            if (fecha.Date < DateTime.Today)
+            {
+                return list;
+            }
+
+            var dtServ = await _dbHelper.ExecuteQueryAsync(
+                "SELECT duracion FROM servicios WHERE Id = @servicioId",
+                new SqlParameter("@servicioId", servicioId));
+            if (dtServ.Rows.Count == 0) return list;
+            int duracionServicio = Convert.ToInt32(dtServ.Rows[0]["duracion"]);
+
+            string nombreDia = ObtenerNombreDiaEspanol(fecha.DayOfWeek);
+            var dtDisp = await _dbHelper.ExecuteQueryAsync(
+                "SELECT hora_inicio, hora_fin FROM disponibilidad WHERE IdEstilista = @estilistaId AND dia = @dia",
+                new SqlParameter("@estilistaId", estilistaId),
+                new SqlParameter("@dia", nombreDia));
+            if (dtDisp.Rows.Count == 0) return list;
+
+            var rowDisp = dtDisp.Rows[0];
+            var horaInicio = (TimeSpan)rowDisp["hora_inicio"];
+            var horaFin = (TimeSpan)rowDisp["hora_fin"];
+
+            var dtCitas = await _dbHelper.ExecuteQueryAsync(
+                @"SELECT c.HoraCita, s.duracion 
+                  FROM citas c 
+                  JOIN servicios s ON c.IdServicio = s.Id 
+                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha",
+                new SqlParameter("@estilistaId", estilistaId),
+                new SqlParameter("@fecha", fecha.Date));
+
+            var citasExistentes = new List<(TimeSpan inicio, TimeSpan fin)>();
+            foreach (DataRow row in dtCitas.Rows)
+            {
+                var A = (TimeSpan)row["HoraCita"];
+                var D = Convert.ToInt32(row["duracion"]);
+                citasExistentes.Add((A, A + TimeSpan.FromMinutes(D)));
+            }
+
+            var N = duracionServicio;
+            var actual = horaInicio;
+
+            while ((actual + TimeSpan.FromMinutes(N)) <= horaFin)
+            {
+                var S = actual;
+                var endSlot = S + TimeSpan.FromMinutes(N);
+
+                if (fecha.Date == DateTime.Today && S <= DateTime.Now.TimeOfDay)
+                {
+                    actual = actual.Add(TimeSpan.FromMinutes(30));
+                    continue;
+                }
+
+                bool colisiona = false;
+                foreach (var cita in citasExistentes)
+                {
+                    if (S < cita.fin && endSlot > cita.inicio)
+                    {
+                        colisiona = true;
+                        break;
+                    }
+                }
+
+                if (!colisiona)
+                {
+                    list.Add(S);
+                }
+
+                actual = actual.Add(TimeSpan.FromMinutes(30));
+            }
+
+            return list;
         }
 
         // POST: Citas/Cancelar/5
@@ -206,7 +456,7 @@ namespace manitaDeGatoWeb.Controllers
             }
 
             // 3. Obtener lista de servicios
-            var dtServicios = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, Id_categoria, IdEstilista FROM servicios ORDER BY nombre");
+            var dtServicios = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre, Id_categoria, IdEstilista, duracion, precio FROM servicios ORDER BY nombre");
             var serviciosList = new List<object>();
             foreach (DataRow row in dtServicios.Rows)
             {
@@ -214,7 +464,9 @@ namespace manitaDeGatoWeb.Controllers
                     Id = Convert.ToInt32(row["Id"]), 
                     Nombre = row["nombre"].ToString(),
                     IdCategoria = Convert.ToInt32(row["Id_categoria"]),
-                    IdEstilista = row.IsNull("IdEstilista") ? (int?)null : Convert.ToInt32(row["IdEstilista"])
+                    IdEstilista = row.IsNull("IdEstilista") ? (int?)null : Convert.ToInt32(row["IdEstilista"]),
+                    Duracion = Convert.ToInt32(row["duracion"]),
+                    Precio = Convert.ToDecimal(row["precio"])
                 });
             }
 

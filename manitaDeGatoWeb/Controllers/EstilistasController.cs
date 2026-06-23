@@ -246,10 +246,151 @@ namespace manitaDeGatoWeb.Controllers
                 }
                 catch (SqlException ex) when (ex.Number == 547)
                 {
-                    TempData["MensajeError"] = $"No se puede eliminar a {nombre} porque tiene citas programadas o historial registrado. Por ahora la base de datos restringe esta acciÃ³n para proteger tu historial.";
+                    TempData["MensajeError"] = $"No se puede eliminar a {nombre} porque tiene citas programadas o historial registrado. Por ahora la base de datos restringe esta acción para proteger tu historial.";
                 }
             }
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: Estilistas/Horario/5
+        public async Task<IActionResult> Horario(int? id)
+        {
+            if (id == null) return NotFound();
+
+            var dtEst = await _dbHelper.ExecuteQueryAsync(
+                "SELECT nombre, apellido FROM estilistas WHERE Id = @id",
+                new SqlParameter("@id", id));
+
+            if (dtEst.Rows.Count == 0) return NotFound();
+
+            var rowEst = dtEst.Rows[0];
+            var viewModel = new EstilistaHorarioViewModel
+            {
+                IdEstilista = id.Value,
+                NombreEstilista = $"{rowEst["nombre"]} {rowEst["apellido"]}"
+            };
+
+            var dtDisp = await _dbHelper.ExecuteQueryAsync(
+                "SELECT dia, hora_inicio, hora_fin FROM disponibilidad WHERE IdEstilista = @idEstilista",
+                new SqlParameter("@idEstilista", id));
+
+            var dispDict = new Dictionary<string, (TimeSpan inicio, TimeSpan fin)>();
+            foreach (DataRow row in dtDisp.Rows)
+            {
+                var dia = row["dia"].ToString() ?? string.Empty;
+                var inicio = (TimeSpan)row["hora_inicio"];
+                var fin = (TimeSpan)row["hora_fin"];
+                dispDict[dia] = (inicio, fin);
+            }
+
+            var diasSemana = new[] { "Lunes", "Martes", "Miercoles", "Jueves", "Viernes" };
+            foreach (var dia in diasSemana)
+            {
+                if (dispDict.ContainsKey(dia))
+                {
+                    viewModel.Dias.Add(new DiaDisponibilidadItem
+                    {
+                        Dia = dia,
+                        Activo = true,
+                        HoraInicio = dispDict[dia].inicio.ToString(@"hh\:mm"),
+                        HoraFin = dispDict[dia].fin.ToString(@"hh\:mm")
+                    });
+                }
+                else
+                {
+                    viewModel.Dias.Add(new DiaDisponibilidadItem
+                    {
+                        Dia = dia,
+                        Activo = false,
+                        HoraInicio = "09:00",
+                        HoraFin = "18:00"
+                    });
+                }
+            }
+
+            return View(viewModel);
+        }
+
+        // POST: Estilistas/Horario/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Horario(int id, EstilistaHorarioViewModel model)
+        {
+            if (id != model.IdEstilista) return NotFound();
+
+            if (ModelState.IsValid)
+            {
+                // Limpiar disponibilidad anterior
+                await _dbHelper.ExecuteNonQueryAsync(
+                    "DELETE FROM disponibilidad WHERE IdEstilista = @idEstilista",
+                    new SqlParameter("@idEstilista", id));
+
+                foreach (var diaItem in model.Dias)
+                {
+                    if (diaItem.Activo)
+                    {
+                        if (TimeSpan.TryParse(diaItem.HoraInicio, out var tInicio) && TimeSpan.TryParse(diaItem.HoraFin, out var tFin))
+                        {
+                            if (tInicio >= tFin)
+                            {
+                                ModelState.AddModelError("", $"Para el día {diaItem.Dia}, la hora de inicio debe ser menor que la hora de término.");
+                                // Recargar nombre del estilista
+                                var dtEst = await _dbHelper.ExecuteQueryAsync(
+                                    "SELECT nombre, apellido FROM estilistas WHERE Id = @id",
+                                    new SqlParameter("@id", id));
+                                model.NombreEstilista = dtEst.Rows.Count > 0 ? $"{dtEst.Rows[0]["nombre"]} {dtEst.Rows[0]["apellido"]}" : "";
+                                return View(model);
+                            }
+
+                            if (tInicio.Minutes % 30 != 0 || tFin.Minutes % 30 != 0)
+                            {
+                                ModelState.AddModelError("", $"Para el día {diaItem.Dia}, las horas deben ser en intervalos de 30 minutos.");
+                                var dtEst = await _dbHelper.ExecuteQueryAsync(
+                                    "SELECT nombre, apellido FROM estilistas WHERE Id = @id",
+                                    new SqlParameter("@id", id));
+                                model.NombreEstilista = dtEst.Rows.Count > 0 ? $"{dtEst.Rows[0]["nombre"]} {dtEst.Rows[0]["apellido"]}" : "";
+                                return View(model);
+                            }
+
+                            await _dbHelper.ExecuteNonQueryAsync(
+                                "INSERT INTO disponibilidad (IdEstilista, dia, hora_inicio, hora_fin) VALUES (@idEstilista, @dia, @horaInicio, @horaFin)",
+                                new SqlParameter("@idEstilista", id),
+                                new SqlParameter("@dia", diaItem.Dia),
+                                new SqlParameter("@horaInicio", tInicio),
+                                new SqlParameter("@horaFin", tFin));
+                        }
+                        else
+                        {
+                            ModelState.AddModelError("", $"Las horas ingresadas para el día {diaItem.Dia} no son válidas.");
+                            var dtEst = await _dbHelper.ExecuteQueryAsync(
+                                "SELECT nombre, apellido FROM estilistas WHERE Id = @id",
+                                new SqlParameter("@id", id));
+                            model.NombreEstilista = dtEst.Rows.Count > 0 ? $"{dtEst.Rows[0]["nombre"]} {dtEst.Rows[0]["apellido"]}" : "";
+                            return View(model);
+                        }
+                    }
+                }
+
+                TempData["MensajeExito"] = "Horario de disponibilidad actualizado con éxito.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            return View(model);
+        }
+    }
+
+    public class EstilistaHorarioViewModel
+    {
+        public int IdEstilista { get; set; }
+        public string NombreEstilista { get; set; } = string.Empty;
+        public List<DiaDisponibilidadItem> Dias { get; set; } = new List<DiaDisponibilidadItem>();
+    }
+
+    public class DiaDisponibilidadItem
+    {
+        public string Dia { get; set; } = string.Empty; // Lunes, Martes, Miercoles, Jueves, Viernes
+        public bool Activo { get; set; }
+        public string HoraInicio { get; set; } = "09:00";
+        public string HoraFin { get; set; } = "18:00";
     }
 }

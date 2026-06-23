@@ -1,0 +1,109 @@
+@model manitaDeGatoWeb.Controllers.EstilistaHorarioViewModel
+
+@{
+    ViewData["Title"] = "Horario de Estilista";
+}
+
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-6 neo-card p-8 sm:p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
+        <!-- Glows de fondo decorativos -->
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
+        
+        <div class="relative z-10">
+            <div class="mb-4">
+                <a asp-action="Index" class="text-pink-500 hover:text-pink-600 flex items-center gap-2 font-semibold text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a estilistas
+                </a>
+            </div>
+
+            <div class="flex flex-col items-center text-center mb-6">
+                <i class="fa-solid fa-clock text-5xl animate-pulse text-pink-500 mb-3"></i>
+                <h1 class="text-3xl font-black text-white tracking-tight">Horario Semanal</h1>
+                <p class="text-sm text-gray-400 mt-1">Define la disponibilidad horaria para @Model.NombreEstilista</p>
+            </div>
+
+            <form asp-action="Horario" method="post" class="space-y-4">
+                <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm font-semibold border-l-2 border-red-500 pl-3 py-1 bg-red-500/10 mb-4"></div>
+                <input type="hidden" asp-for="IdEstilista" />
+                <input type="hidden" asp-for="NombreEstilista" />
+
+                <div class="space-y-5">
+                    @for (int i = 0; i < Model.Dias.Count; i++)
+                    {
+                        <div class="p-4 rounded-xl border border-gray-800 bg-black/20 hover:border-pink-500/20 transition-all duration-300">
+                            <input type="hidden" asp-for="Dias[i].Dia" />
+                            
+                            <div class="flex items-center justify-between mb-3">
+                                <label class="flex items-center gap-3 cursor-pointer select-none">
+                                    <input type="checkbox" asp-for="Dias[i].Activo" id="activo-@i" onchange="toggleDia(@i)" class="w-5 h-5 text-pink-600 border-gray-700 bg-gray-800 rounded focus:ring-pink-500 focus:ring-offset-gray-900 focus:ring-2" />
+                                    <span class="text-base font-bold text-white">@Model.Dias[i].Dia</span>
+                                </label>
+                                <span id="status-@i" class="text-xs font-bold px-2 py-0.5 rounded transition-all">
+                                    @(Model.Dias[i].Activo ? "Trabaja" : "No trabaja")
+                                </span>
+                            </div>
+
+                            <div id="inputs-@i" class="grid grid-cols-2 gap-4 transition-opacity duration-200 @(Model.Dias[i].Activo ? "" : "opacity-40 pointer-events-none")">
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 mb-1">Hora Inicio</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fa-regular fa-clock text-gray-400 text-xs"></i>
+                                        </div>
+                                        <input type="time" step="1800" asp-for="Dias[i].HoraInicio" id="inicio-@i" class="w-full pl-9 pr-3 py-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-sm" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-400 mb-1">Hora Término</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fa-regular fa-clock text-gray-400 text-xs"></i>
+                                        </div>
+                                        <input type="time" step="1800" asp-for="Dias[i].HoraFin" id="fin-@i" class="w-full pl-9 pr-3 py-2 border border-gray-700/50 rounded-lg bg-gray-800/30 text-white placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-sm" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="mt-8 flex gap-3 border-t border-gray-800 pt-6">
+                    <a asp-action="Index" class="w-1/2 flex justify-center items-center py-3 px-4 border border-gray-700 rounded-lg text-gray-300 hover:bg-gray-500/10 font-semibold text-base transition-all">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="w-1/2 flex justify-center items-center py-3 px-4 border border-transparent text-base font-bold rounded-lg text-real-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all shadow-md hover:shadow-lg">
+                        Guardar Horario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleDia(index) {
+            const checkbox = document.getElementById(`activo-${index}`);
+            const container = document.getElementById(`inputs-${index}`);
+            const status = document.getElementById(`status-${index}`);
+            
+            if (checkbox.checked) {
+                container.classList.remove('opacity-40', 'pointer-events-none');
+                status.textContent = "Trabaja";
+                status.className = "text-xs font-bold px-2 py-0.5 rounded bg-green-500/10 text-green-400 border border-green-500/20";
+            } else {
+                container.classList.add('opacity-40', 'pointer-events-none');
+                status.textContent = "No trabaja";
+                status.className = "text-xs font-bold px-2 py-0.5 rounded bg-gray-500/10 text-gray-400 border border-gray-500/10";
+            }
+        }
+
+        // Initialize status badge classes on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            for (let i = 0; i < 5; i++) {
+                toggleDia(i);
+            }
+        });
+    </script>
+}

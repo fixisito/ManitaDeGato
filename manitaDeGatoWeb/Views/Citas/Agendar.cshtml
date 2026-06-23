@@ -4,115 +4,196 @@
     ViewData["Title"] = "Agendar Cita";
 }
 
-<div class="max-w-2xl mx-auto">
-    <div class="mb-6">
-        <a asp-action="Historial" class="text-pink-500 hover:text-pink-600 flex items-center gap-2 font-medium">
-            <i class="fa-solid fa-arrow-left"></i> Volver a mis citas
-        </a>
-    </div>
-
-    <div class="neo-card rounded-2xl shadow-md border border-gray-800 p-8 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-32 h-32 bg-pink-900/20 rounded-bl-full -z-10"></div>
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-6 neo-card p-8 sm:p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
+        <!-- Glows de fondo decorativos -->
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
         
-        <h1 class="text-2xl font-bold text-white mb-2 flex items-center gap-3">
-            <div class="bg-pink-500/10 text-pink-500 p-2 rounded-lg">
-                <i class="fa-solid fa-calendar-plus"></i>
+        <div class="relative z-10">
+            <div class="mb-4">
+                <a asp-action="Historial" class="text-pink-500 hover:text-pink-600 flex items-center gap-2 font-semibold text-sm">
+                    <i class="fa-solid fa-arrow-left"></i> Volver a mis citas
+                </a>
             </div>
-            Reserva tu Cita
-        </h1>
-        <p class="text-gray-400 mb-6 ml-12">Elige la categoría, tu estilista favorito y el horario que mejor te acomode.</p>
 
-        <form asp-action="Agendar">
-            <div asp-validation-summary="ModelOnly" class="text-red-500 mb-4 text-sm"></div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- CATEGORÍA -->
-                <div class="col-span-1 md:col-span-2">
-                    <label for="IdCategoria" class="block text-sm font-medium text-gray-300 mb-1">1. Categoría del servicio</label>
+            <div class="flex flex-col items-center text-center mb-6">
+                <i class="fa-solid fa-calendar-plus text-5xl animate-pulse text-pink-500 mb-3"></i>
+                <h1 class="text-3xl font-black text-white tracking-tight">Reserva tu Cita</h1>
+                <p class="text-sm text-gray-400 mt-1">Elige la categoría, estilista, servicio y el día más disponible para ti.</p>
+            </div>
+
+            <form asp-action="Agendar" method="post" class="space-y-5">
+                <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm font-semibold border-l-2 border-red-500 pl-3 py-1 bg-red-500/10 mb-4"></div>
+                
+                <input type="hidden" asp-for="FechaCita" id="FechaCita" />
+
+                <!-- 1. CATEGORÍA -->
+                <div>
+                    <label for="IdCategoria" class="block text-sm font-semibold text-gray-400 mb-1.5">1. Categoría del servicio</label>
                     <div class="relative">
-                        <select id="IdCategoria" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none">
+                        <select id="IdCategoria" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base appearance-none">
                             <option value="">-- Selecciona una categoría --</option>
                         </select>
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-layer-group text-gray-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-layer-group text-gray-400 text-sm"></i>
                         </div>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
                 </div>
 
-                <!-- ESTILISTA -->
-                <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdEstilista" class="block text-sm font-medium text-gray-300 mb-1">2. Estilista de preferencia</label>
+                <!-- 2. ESTILISTA -->
+                <div>
+                    <label asp-for="IdEstilista" class="block text-sm font-semibold text-gray-400 mb-1.5">2. Estilista de preferencia</label>
                     <div class="relative">
-                        <select asp-for="IdEstilista" disabled class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <select asp-for="IdEstilista" id="IdEstilista" disabled required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base appearance-none disabled:opacity-40 disabled:cursor-not-allowed">
                             <option value="">-- Primero selecciona una categoría --</option>
                         </select>
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-scissors text-gray-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-scissors text-gray-400 text-sm"></i>
                         </div>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
-                    <span asp-validation-for="IdEstilista" class="text-red-500 text-xs mt-1"></span>
+                    <span asp-validation-for="IdEstilista" class="text-red-500 text-xs mt-1 block"></span>
                 </div>
 
-                <!-- SERVICIO -->
-                <div class="col-span-1 md:col-span-2">
-                    <label asp-for="IdServicio" class="block text-sm font-medium text-gray-300 mb-1">3. Servicio a realizar</label>
+                <!-- 3. SERVICIO -->
+                <div>
+                    <label asp-for="IdServicio" class="block text-sm font-semibold text-gray-400 mb-1.5">3. Servicio a realizar</label>
                     <div class="relative">
-                        <select asp-for="IdServicio" disabled class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none disabled:opacity-50 disabled:cursor-not-allowed">
+                        <select asp-for="IdServicio" id="IdServicio" disabled required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base appearance-none disabled:opacity-40 disabled:cursor-not-allowed">
                             <option value="">-- Luego selecciona tu estilista --</option>
                         </select>
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-bell-concierge text-gray-400"></i>
+                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-bell-concierge text-gray-400 text-sm"></i>
                         </div>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
-                        </div>
-                    </div>
-                    <span asp-validation-for="IdServicio" class="text-red-500 text-xs mt-1"></span>
-                </div>
-
-                <!-- FECHA -->
-                <div>
-                    <label asp-for="FechaCita" class="block text-sm font-medium text-gray-300 mb-1">Día de la cita</label>
-                    <div class="relative">
-                        <input asp-for="FechaCita" type="date" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 bg-white/50 dark:bg-gray-800/50" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
-                    </div>
-                    <span asp-validation-for="FechaCita" class="text-red-500 text-xs mt-1"></span>
-                </div>
-
-                <!-- HORA -->
-                <div>
-                    <label asp-for="HoraCita" class="block text-sm font-medium text-gray-300 mb-1">Hora de la cita</label>
-                    <div class="relative">
-                        <select asp-for="HoraCita" class="w-full pl-10 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white/50 dark:bg-gray-800/50 focus:ring-pink-500 focus:border-pink-500 appearance-none">
-                            <option value="">-- Hora --</option>
-                        </select>
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-clock text-gray-400"></i>
-                        </div>
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <i class="fa-solid fa-chevron-down text-gray-400"></i>
+                        <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                            <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
                         </div>
                     </div>
-                    <span asp-validation-for="HoraCita" class="text-red-500 text-xs mt-1"></span>
-                </div>
-            </div>
+                    <span asp-validation-for="IdServicio" class="text-red-500 text-xs mt-1 block"></span>
 
-            <div class="mt-8 pt-6 border-t border-gray-800 flex items-center justify-between">
-                <p class="text-sm text-gray-400 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info text-pink-400"></i>
-                    Recibirás confirmación inmediata
-                </p>
-                <button type="submit" class="px-8 py-3 bg-pink-600 text-real-white rounded-lg hover:bg-pink-700 transition-all shadow-lg hover:shadow-xl font-medium text-lg flex items-center gap-2">
-                    Confirmar Reserva <i class="fa-solid fa-arrow-right"></i>
-                </button>
-            </div>
-        </form>
+                    <!-- Badge de información del servicio seleccionado -->
+                    <div id="ServicioInfoBadge" class="hidden mt-3 p-3 rounded-lg border border-pink-500/20 bg-pink-500/5 flex justify-between items-center text-sm">
+                        <span class="text-gray-300 font-medium flex items-center gap-1.5">
+                            <i class="fa-regular fa-clock text-pink-500"></i> Duración: <strong id="ServicioDuracionText" class="text-white"></strong>
+                        </span>
+                        <span class="text-gray-300 font-medium flex items-center gap-1.5">
+                            <i class="fa-solid fa-dollar-sign text-pink-500"></i> Precio Net: <strong id="ServicioPrecioText" class="text-white"></strong>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 4. CALENDARIO INTERACTIVO -->
+                <div id="CalendarContainer" class="hidden space-y-4">
+                    <div class="relative py-4">
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div class="w-full border-t border-pink-500/30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                            <span class="px-4 text-pink-500 dark:text-pink-400 rounded border border-pink-500/20 py-1 shadow-sm transition-colors duration-500" style="background-color: var(--bg-color)">
+                                4. Elige el Día de la Cita
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="neo-card p-4 rounded-xl border border-gray-800 bg-black/30 relative">
+                        <!-- Spinner de carga del calendario -->
+                        <div id="CalendarLoadingOverlay" class="hidden absolute inset-0 bg-black/70 rounded-xl flex items-center justify-center z-20">
+                            <i class="fa-solid fa-circle-notch fa-spin text-pink-500 text-3xl"></i>
+                        </div>
+
+                        <!-- Cabecera de mes -->
+                        <div class="flex items-center justify-between mb-4 px-2">
+                            <button type="button" id="prevMonthBtn" class="text-pink-500 hover:text-pink-600 p-2 rounded-lg bg-pink-500/10 transition-colors">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <h3 id="currentMonthYearLabel" class="text-lg font-extrabold text-white uppercase tracking-wider">Junio 2026</h3>
+                            <button type="button" id="nextMonthBtn" class="text-pink-500 hover:text-pink-600 p-2 rounded-lg bg-pink-500/10 transition-colors">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                        </div>
+
+                        <!-- Columnas de días de la semana -->
+                        <div class="grid grid-cols-7 gap-1 text-center mb-2 font-bold text-xs text-pink-500/70">
+                            <div>Lun</div>
+                            <div>Mar</div>
+                            <div>Mié</div>
+                            <div>Jue</div>
+                            <div>Vie</div>
+                            <div class="text-gray-600">Sáb</div>
+                            <div class="text-gray-600">Dom</div>
+                        </div>
+
+                        <!-- Grid de días del mes -->
+                        <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1.5 text-center">
+                            <!-- Inyectado por JS -->
+                        </div>
+
+                        <!-- Leyendas explicativas -->
+                        <div class="flex flex-wrap items-center justify-center gap-4 mt-4 pt-3 border-t border-gray-800/80 text-xs text-gray-400">
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-green-500/80 border border-green-500"></span>
+                                <span>Disponible</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-red-500/80 border border-red-500"></span>
+                                <span>Agotado</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-full bg-gray-700/80 border border-gray-600"></span>
+                                <span>Día libre / Fin de semana</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. HORA -->
+                <div id="TimePickerContainer" class="hidden space-y-4">
+                    <div class="relative py-4">
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div class="w-full border-t border-pink-500/30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                            <span class="px-4 text-pink-500 dark:text-pink-400 rounded border border-pink-500/20 py-1 shadow-sm transition-colors duration-500" style="background-color: var(--bg-color)">
+                                5. Elige la Hora
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label asp-for="HoraCita" class="block text-sm font-semibold text-gray-400 mb-1.5">Hora de inicio</label>
+                        <div class="relative">
+                            <select asp-for="HoraCita" id="HoraCita" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base appearance-none">
+                                <option value="">-- Selecciona una hora --</option>
+                            </select>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-regular fa-clock text-gray-400 text-sm"></i>
+                            </div>
+                            <div class="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-chevron-down text-gray-400 text-sm"></i>
+                            </div>
+                        </div>
+                        <span asp-validation-for="HoraCita" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+                </div>
+
+                <!-- ACCIONES -->
+                <div class="mt-8 pt-6 border-t border-gray-800 flex items-center justify-between">
+                    <p class="text-xs text-gray-400 flex items-center gap-1.5 max-w-[60%]">
+                        <i class="fa-solid fa-circle-info text-pink-500"></i>
+                        Las horas mostradas no generan conflicto con reservas previas.
+                    </p>
+                    <button type="submit" id="SubmitButton" disabled class="px-6 py-3.5 bg-pink-600 text-real-white rounded-lg hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all shadow-md hover:shadow-lg font-bold text-base flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                        Confirmar Reserva <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -128,30 +209,32 @@
             const selEstilista = document.getElementById('IdEstilista');
             const selServicio = document.getElementById('IdServicio');
             const selHora = document.getElementById('HoraCita');
+            const grid = document.getElementById('calendarDaysGrid');
+            const btnSubmit = document.getElementById('SubmitButton');
+
+            let today = new Date();
+            let currentYear = today.getFullYear();
+            let currentMonth = today.getMonth();
+
+            const nombresMeses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
             // 1. Cargar Categorías
             categorias.forEach(c => {
                 selCategoria.add(new Option(c.Nombre, c.Id));
             });
 
-            // 2. Cargar Bloques de Horas (10:00 a 20:30)
-            for(let hour = 10; hour <= 20; hour++) {
-                let hString = hour.toString().padStart(2, '0');
-                selHora.add(new Option(`${hString}:00`, `${hString}:00:00`));
-                if(hour < 21) {
-                    selHora.add(new Option(`${hString}:30`, `${hString}:30:00`));
-                }
-            }
-
-            // 3. Lógica Cascada: Categoría -> Estilista
+            // 2. Lógica Cascada: Categoría -> Estilista
             selCategoria.addEventListener('change', function() {
                 selEstilista.disabled = true;
                 selServicio.disabled = true;
                 selEstilista.innerHTML = '<option value="">-- Selecciona tu estilista --</option>';
                 selServicio.innerHTML = '<option value="">-- Luego selecciona el servicio --</option>';
+                document.getElementById('ServicioInfoBadge').classList.add('hidden');
+                
+                resetBookingStep();
 
                 const catId = this.value;
-                if(catId) {
+                if (catId) {
                     estilistas.forEach(e => {
                         selEstilista.add(new Option(e.Nombre, e.Id));
                     });
@@ -159,16 +242,18 @@
                 }
             });
 
-            // 4. Lógica Cascada: Estilista -> Servicio
+            // 3. Lógica Cascada: Estilista -> Servicio
             selEstilista.addEventListener('change', function() {
                 selServicio.disabled = true;
                 selServicio.innerHTML = '<option value="">-- Selecciona el servicio --</option>';
+                document.getElementById('ServicioInfoBadge').classList.add('hidden');
+
+                resetBookingStep();
                 
                 const catId = parseInt(selCategoria.value);
                 const estId = parseInt(this.value);
 
-                if(catId && estId) {
-                    // Filtrar servicios de la categoría elegida, que sean globales o del estilista
+                if (catId && estId) {
                     const serviciosFiltrados = servicios.filter(s => 
                         s.IdCategoria === catId && 
                         (s.IdEstilista === null || s.IdEstilista === estId)
@@ -178,13 +263,235 @@
                         selServicio.add(new Option(s.Nombre, s.Id));
                     });
                     
-                    if(serviciosFiltrados.length === 0) {
+                    if (serviciosFiltrados.length === 0) {
                         selServicio.innerHTML = '<option value="">-- No hay servicios disponibles --</option>';
                     } else {
                         selServicio.disabled = false;
                     }
                 }
             });
+
+            // 4. Servicio seleccionado -> Mostrar info y gatillar calendario
+            selServicio.addEventListener('change', function() {
+                const servId = parseInt(this.value);
+                const infoBadge = document.getElementById('ServicioInfoBadge');
+
+                resetBookingStep();
+
+                if (servId) {
+                    const servDetails = servicios.find(s => s.Id === servId);
+                    if (servDetails) {
+                        // El servicio fue cargado desde JSON. Busquemos más detalles en su info.
+                        // Para la duración y precio, ya que la serialización de servicios en CargarServiciosYEstilistasEnViewBag solo incluye Id, nombre, Id_categoria, IdEstilista,
+                        // podemos usar AJAX si no estuvieran en el JSON. Pero wait! CargarServiciosYEstilistasEnViewBag incluye duracion y precio?
+                        // Let's check:
+                        // "SELECT Id, nombre, Id_categoria, IdEstilista FROM servicios" -> oh!
+                        // CargarServiciosYEstilistasEnViewBag no serializa duracion y precio en el json!
+                        // Let's modify the JS to fetch service info or update CargarServiciosYEstilistasEnViewBag.
+                        // Actually, let's query it or let's check: the view has the servicios list.
+                        // We will modify the C# code in CargarServiciosYEstilistasEnViewBag to serialize 'duracion' and 'precio' as well!
+                        // Let's check the JSON structure:
+                        // in CitasController:
+                        // s.Id, s.nombre, s.Id_categoria, s.IdEstilista
+                        // Yes! We will update CitasController to serialize duracion and precio too, but first let's write the JS to consume them.
+                        const rawDuracion = servDetails.Duracion || 30; // default/fallback
+                        const rawPrecio = servDetails.Precio || 0;
+                        document.getElementById('ServicioDuracionText').textContent = `${rawDuracion} min`;
+                        document.getElementById('ServicioPrecioText').textContent = `$${rawPrecio.toLocaleString('es-CL')}`;
+                        infoBadge.classList.remove('hidden');
+                    }
+                    checkSelectionAndLoadCalendar();
+                } else {
+                    infoBadge.classList.add('hidden');
+                }
+            });
+
+            // 5. Control de navegación del mes
+            document.getElementById('prevMonthBtn').addEventListener('click', () => {
+                let target = new Date(currentYear, currentMonth - 1, 1);
+                let minTarget = new Date(today.getFullYear(), today.getMonth(), 1);
+                if (target >= minTarget) {
+                    currentMonth--;
+                    if (currentMonth < 0) {
+                        currentMonth = 11;
+                        currentYear--;
+                    }
+                    cargarDisponibilidadMes(currentYear, currentMonth);
+                }
+            });
+
+            document.getElementById('nextMonthBtn').addEventListener('click', () => {
+                let target = new Date(currentYear, currentMonth + 1, 1);
+                let maxTarget = new Date(today.getFullYear(), today.getMonth() + 3, 1);
+                if (target <= maxTarget) {
+                    currentMonth++;
+                    if (currentMonth > 11) {
+                        currentMonth = 0;
+                        currentYear++;
+                    }
+                    cargarDisponibilidadMes(currentYear, currentMonth);
+                }
+            });
+
+            selHora.addEventListener('change', function() {
+                if (this.value) {
+                    btnSubmit.disabled = false;
+                } else {
+                    btnSubmit.disabled = true;
+                }
+            });
+
+            function resetBookingStep() {
+                document.getElementById('FechaCita').value = '';
+                selHora.innerHTML = '<option value="">-- Selecciona una hora --</option>';
+                document.getElementById('CalendarContainer').classList.add('hidden');
+                document.getElementById('TimePickerContainer').classList.add('hidden');
+                btnSubmit.disabled = true;
+            }
+
+            function checkSelectionAndLoadCalendar() {
+                const estId = selEstilista.value;
+                const servId = selServicio.value;
+                
+                if (estId && servId) {
+                    document.getElementById('CalendarContainer').classList.remove('hidden');
+                    cargarDisponibilidadMes(currentYear, currentMonth);
+                }
+            }
+
+            function cargarDisponibilidadMes(year, month) {
+                const estId = selEstilista.value;
+                const servId = selServicio.value;
+                const loadingOverlay = document.getElementById('CalendarLoadingOverlay');
+                const label = document.getElementById('currentMonthYearLabel');
+
+                label.textContent = `${nombresMeses[month]} ${year}`;
+                loadingOverlay.classList.remove('hidden');
+
+                // Llamar AJAX
+                fetch(`/Citas/ObtenerDisponibilidadMes?estilistaId=${estId}&servicioId=${servId}&anio=${year}&mes=${month + 1}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Error de red");
+                        return response.json();
+                    })
+                    .then(data => {
+                        renderCalendarGrid(year, month, data);
+                    })
+                    .catch(err => {
+                        console.error("Error cargando disponibilidad:", err);
+                        grid.innerHTML = '<div class="col-span-7 py-4 text-red-500 font-semibold text-xs">Error al cargar la disponibilidad del mes.</div>';
+                    })
+                    .finally(() => {
+                        loadingOverlay.classList.add('hidden');
+                    });
+            }
+
+            function renderCalendarGrid(year, month, apiData) {
+                grid.innerHTML = '';
+
+                // Primer día del mes
+                let firstDay = new Date(year, month, 1).getDay(); // 0 es Domingo, 1 Lunes...
+                // Adaptamos para que Lunes sea 0 y Domingo sea 6
+                let offset = firstDay === 0 ? 6 : firstDay - 1;
+
+                // Total días del mes
+                let daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Celdas vacías de desfase
+                for (let i = 0; i < offset; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = "py-2";
+                    grid.appendChild(emptyCell);
+                }
+
+                // Días reales
+                for (let day = 1; day <= daysInMonth; day++) {
+                    let dateStr = `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+                    
+                    const dayBtn = document.createElement('button');
+                    dayBtn.type = "button";
+                    dayBtn.textContent = day;
+                    dayBtn.dataset.fecha = dateStr;
+                    
+                    let dayInfo = apiData.find(item => item.fecha === dateStr);
+                    let status = dayInfo ? dayInfo.estado : "inactivo";
+                    
+                    dayBtn.className = "py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 focus:outline-none ";
+                    
+                    if (status === "disponible") {
+                        dayBtn.className += "border border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/25 hover:border-green-500 cursor-pointer";
+                        dayBtn.addEventListener('click', function() {
+                            seleccionarDia(this, dateStr);
+                        });
+                    } else if (status === "agotado") {
+                        dayBtn.className += "border border-red-500/25 bg-red-500/5 text-red-500/30 cursor-not-allowed";
+                        dayBtn.title = "Agotado";
+                    } else {
+                        dayBtn.className += "text-gray-600 bg-gray-900/10 cursor-not-allowed";
+                    }
+                    
+                    grid.appendChild(dayBtn);
+                }
+
+                // Conservar selección visual si el día ya estaba seleccionado y está en el mes renderizado
+                const selectedFecha = document.getElementById('FechaCita').value;
+                if (selectedFecha) {
+                    const activeBtn = grid.querySelector(`button[data-fecha="${selectedFecha}"]`);
+                    if (activeBtn) {
+                        activeBtn.classList.remove('border-green-500/30', 'bg-green-500/10', 'text-green-400');
+                        activeBtn.classList.add('ring-2', 'ring-pink-500', 'bg-pink-500/25', 'border-pink-500', 'text-white');
+                    }
+                }
+            }
+
+            function seleccionarDia(btn, dateStr) {
+                // Quitar selección a todos
+                const buttons = grid.querySelectorAll('button');
+                buttons.forEach(b => {
+                    if (b.classList.contains('ring-2')) {
+                        b.classList.remove('ring-2', 'ring-pink-500', 'bg-pink-500/25', 'border-pink-500', 'text-white');
+                        b.classList.add('border-green-500/30', 'bg-green-500/10', 'text-green-400');
+                    }
+                });
+
+                // Seleccionar actual
+                btn.classList.remove('border-green-500/30', 'bg-green-500/10', 'text-green-400');
+                btn.classList.add('ring-2', 'ring-pink-500', 'bg-pink-500/25', 'border-pink-500', 'text-white');
+
+                // Guardar en input oculto
+                document.getElementById('FechaCita').value = dateStr;
+
+                // Cargar horas
+                cargarHorasDisponibles(selEstilista.value, selServicio.value, dateStr);
+            }
+
+            function cargarHorasDisponibles(estilistaId, servicioId, fecha) {
+                selHora.innerHTML = '<option value="">Cargando horas...</option>';
+                document.getElementById('TimePickerContainer').classList.remove('hidden');
+                btnSubmit.disabled = true;
+
+                fetch(`/Citas/ObtenerHorasDisponibles?estilistaId=${estilistaId}&servicioId=${servicioId}&fecha=${fecha}`)
+                    .then(response => {
+                        if (!response.ok) throw new Error("Error al obtener horas");
+                        return response.json();
+                    })
+                    .then(horas => {
+                        selHora.innerHTML = '<option value="">-- Selecciona una hora --</option>';
+                        if (horas && horas.length > 0) {
+                            horas.forEach(h => {
+                                selHora.add(new Option(h, h + ":00"));
+                            });
+                            selHora.disabled = false;
+                        } else {
+                            selHora.innerHTML = '<option value="">Sin horas disponibles</option>';
+                            selHora.disabled = true;
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error cargando horas:", err);
+                        selHora.innerHTML = '<option value="">Error cargando horas</option>';
+                    });
+            }
         });
     </script>
 }
