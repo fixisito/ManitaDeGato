@@ -6,19 +6,40 @@
     var isEstilista = User.IsInRole("Estilista");
 }
 
-<div class="mb-8 flex justify-between items-center">
+<div class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
     <div>
         <h1 class="text-3xl font-bold text-white">
             @(isCliente ? "Mi Historial de Citas" : isEstilista ? "Mi Agenda" : "Todas las Citas")
         </h1>
         <p class="text-gray-400 mt-1">Revisa y gestiona los horarios programados.</p>
     </div>
-    @if (isCliente)
-    {
-        <a asp-action="Agendar" class="bg-pink-600 text-real-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors shadow-md flex items-center gap-2">
-            <i class="fa-solid fa-calendar-plus"></i> Nueva Cita
-        </a>
-    }
+    <div class="flex items-center gap-3 self-end sm:self-auto">
+        @if (isCliente)
+        {
+            @if (Model.Any(c => c.Estado == "Cancelada" || c.FechaCita.Date < DateTime.Today || (c.FechaCita.Date == DateTime.Today && c.HoraCita < DateTime.Now.TimeOfDay)))
+            {
+                <form asp-action="LimpiarHistorial" method="post" onsubmit="return confirm('¿Estás seguro de limpiar tu historial? Se eliminarán permanentemente todas tus citas pasadas y canceladas. Tus citas futuras confirmadas no sufrirán cambios.');">
+                    <button type="submit" class="border border-red-500/30 text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors font-semibold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Limpiar Historial
+                    </button>
+                </form>
+            }
+            <a asp-action="Agendar" class="bg-pink-600 text-real-white px-6 py-2 rounded-lg hover:bg-pink-700 transition-colors shadow-md flex items-center gap-2 text-sm font-bold">
+                <i class="fa-solid fa-calendar-plus"></i> Nueva Cita
+            </a>
+        }
+        else if (User.IsInRole("Administrador"))
+        {
+            @if (Model.Any(c => c.Estado == "Cancelada" || c.FechaCita.Date < DateTime.Today || (c.FechaCita.Date == DateTime.Today && c.HoraCita < DateTime.Now.TimeOfDay)))
+            {
+                <form asp-action="LimpiarHistorial" method="post" onsubmit="return confirm('¿Estás seguro de limpiar el historial global? Se eliminarán permanentemente de la base de datos todas las citas pasadas y canceladas de todos los clientes.');">
+                    <button type="submit" class="border border-red-500/30 text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors font-semibold text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-trash-can"></i> Limpiar Historial Global
+                    </button>
+                </form>
+            }
+        }
+    </div>
 </div>
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

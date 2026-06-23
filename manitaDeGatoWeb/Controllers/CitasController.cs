@@ -437,6 +437,57 @@ namespace manitaDeGatoWeb.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Citas/LimpiarHistorial
+        [HttpPost]
+        [Authorize(Roles = "Cliente,Administrador")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LimpiarHistorial()
+        {
+            var isCliente = User.IsInRole("Cliente");
+            var isAdmin = User.IsInRole("Administrador");
+            
+            var today = DateTime.Today;
+            var nowTime = DateTime.Now.TimeOfDay;
+
+            string query = "";
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("@today", today),
+                new SqlParameter("@nowTime", nowTime)
+            };
+
+            if (isCliente)
+            {
+                var clienteId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+                query = @"
+                    DELETE FROM citas 
+                    WHERE IdCliente = @clienteId 
+                      AND (estado = 'Cancelada' 
+                           OR FechaCita < @today 
+                           OR (FechaCita = @today AND HoraCita < @nowTime))";
+                parameters.Add(new SqlParameter("@clienteId", clienteId));
+            }
+            else if (isAdmin)
+            {
+                query = @"
+                    DELETE FROM citas 
+                    WHERE estado = 'Cancelada' 
+                       OR FechaCita < @today 
+                       OR (FechaCita = @today AND HoraCita < @nowTime)";
+            }
+
+            if (!string.IsNullOrEmpty(query))
+            {
+                int rowsDeleted = await _dbHelper.ExecuteNonQueryAsync(query, parameters.ToArray());
+                TempData["MensajeExito"] = isCliente 
+                    ? "Historial de citas limpiado correctamente." 
+                    : $"Historial global depurado. Se eliminaron {rowsDeleted} citas pasadas o canceladas.";
+            }
+
+            if (isCliente) return RedirectToAction(nameof(Historial));
+            return RedirectToAction(nameof(Index));
+        }
+
         private async Task CargarServiciosYEstilistasEnViewBag(int? selectedServicioId, int? selectedEstilistaId)
         {
             // 1. Obtener lista de categorías
