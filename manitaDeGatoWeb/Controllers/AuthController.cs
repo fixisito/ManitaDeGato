@@ -98,6 +98,20 @@ namespace manitaDeGatoWeb.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Verificar si el correo ya está registrado
+                var countEmailCliente = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
+                    "SELECT COUNT(*) FROM clientes WHERE correo = @correo",
+                    new SqlParameter("@correo", cliente.Correo)));
+                var countEmailEstilista = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
+                    "SELECT COUNT(*) FROM estilistas WHERE correo = @correo",
+                    new SqlParameter("@correo", cliente.Correo)));
+
+                if (countEmailCliente > 0 || countEmailEstilista > 0)
+                {
+                    ViewBag.Error = "El correo electrónico ya está registrado.";
+                    return View(cliente);
+                }
+
                 // Verificar si el usuario ya existe en alguna de las 3 tablas
                 var countAdmin = Convert.ToInt32(await _dbHelper.ExecuteScalarAsync(
                     "SELECT COUNT(*) FROM administradores WHERE usuario = @usuario",
