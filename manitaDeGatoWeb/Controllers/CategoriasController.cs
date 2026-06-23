@@ -115,15 +115,64 @@ namespace manitaDeGatoWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            try
+            using (var connection = _dbHelper.GetConnection())
             {
-                await _dbHelper.ExecuteNonQueryAsync("DELETE FROM categoria WHERE Id = @id", new SqlParameter("@id", id));
+                await connection.OpenAsync();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    try
+                    {
+                        // 1. Eliminar relaciones en estilista_categoria
+                        string deleteEstCat = "DELETE FROM estilista_categoria WHERE IdCategoria = @id";
+                        using (var cmd = new SqlCommand(deleteEstCat, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // 2. Eliminar relaciones en serviciosPorEstilista
+                        string deleteServEst = "DELETE FROM serviciosPorEstilista WHERE IdServicio IN (SELECT Id FROM servicios WHERE Id_categoria = @id)";
+                        using (var cmd = new SqlCommand(deleteServEst, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // 3. Eliminar citas asociadas a los servicios de esta categoría
+                        string deleteCitas = "DELETE FROM citas WHERE IdServicio IN (SELECT Id FROM servicios WHERE Id_categoria = @id)";
+                        using (var cmd = new SqlCommand(deleteCitas, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // 4. Eliminar servicios en esta categoría
+                        string deleteServicios = "DELETE FROM servicios WHERE Id_categoria = @id";
+                        using (var cmd = new SqlCommand(deleteServicios, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        // 5. Eliminar la categoría misma
+                        string deleteCategoria = "DELETE FROM categoria WHERE Id = @id";
+                        using (var cmd = new SqlCommand(deleteCategoria, connection, transaction))
+                        {
+                            cmd.Parameters.AddWithValue("@id", id);
+                            await cmd.ExecuteNonQueryAsync();
+                        }
+
+                        transaction.Commit();
+                        TempData["MensajeExito"] = "La categoría y todos sus servicios/citas asociados se han eliminado en cascada correctamente.";
+                    }
+                    catch (Exception ex)
+                    {
+                        transaction.Rollback();
+                        TempData["MensajeError"] = $"Error al eliminar la categoría en cascada: {ex.Message}";
+                    }
+                }
             }
-            catch (SqlException ex) when (ex.Number == 547)
-            {
-                TempData["MensajeError"] = "No se puede eliminar esta categoría porque tiene servicios asociados.";
-                return RedirectToAction(nameof(Index));
-            }
+
             return RedirectToAction(nameof(Index));
         }
     }
