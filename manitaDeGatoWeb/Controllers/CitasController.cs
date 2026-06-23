@@ -299,7 +299,7 @@ namespace manitaDeGatoWeb.Controllers
                 @"SELECT c.HoraCita, s.duracion 
                   FROM citas c 
                   JOIN servicios s ON c.IdServicio = s.Id 
-                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha",
+                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha AND c.estado <> 'Cancelada'",
                 new SqlParameter("@estilistaId", estilistaId),
                 new SqlParameter("@fecha", fecha.Date));
 
@@ -355,7 +355,7 @@ namespace manitaDeGatoWeb.Controllers
                 @"SELECT c.HoraCita, s.duracion 
                   FROM citas c 
                   JOIN servicios s ON c.IdServicio = s.Id 
-                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha",
+                  WHERE c.IdEstilista = @estilistaId AND c.FechaCita = @fecha AND c.estado <> 'Cancelada'",
                 new SqlParameter("@estilistaId", estilistaId),
                 new SqlParameter("@fecha", fecha.Date));
 
@@ -429,7 +429,7 @@ namespace manitaDeGatoWeb.Controllers
                     return Unauthorized();
                 }
 
-                await _dbHelper.ExecuteNonQueryAsync("DELETE FROM citas WHERE Id = @id", new SqlParameter("@id", id));
+                await _dbHelper.ExecuteNonQueryAsync("UPDATE citas SET estado = 'Cancelada' WHERE Id = @id", new SqlParameter("@id", id));
             }
 
             if (User.IsInRole("Cliente")) return RedirectToAction(nameof(Historial));

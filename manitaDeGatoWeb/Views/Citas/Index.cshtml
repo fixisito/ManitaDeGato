@@ -24,6 +24,28 @@
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     @foreach (var item in Model)
     {
+        var esPasada = item.FechaCita.Date < DateTime.Today || 
+                      (item.FechaCita.Date == DateTime.Today && item.HoraCita < DateTime.Now.TimeOfDay);
+        var estadoCita = item.Estado;
+        var pillClass = "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400";
+        var labelEstado = estadoCita;
+
+        if (estadoCita == "Cancelada")
+        {
+            pillClass = "bg-red-500/10 text-red-700 dark:text-red-400 border border-red-500/20";
+            labelEstado = "Cancelada";
+        }
+        else if (esPasada)
+        {
+            pillClass = "bg-blue-500/10 text-blue-700 dark:text-blue-400 border border-blue-500/20";
+            labelEstado = "Finalizada";
+        }
+        else if (estadoCita == "Confirmada")
+        {
+            pillClass = "bg-green-500/10 text-green-700 dark:text-green-400 border border-green-500/20";
+            labelEstado = "Confirmada";
+        }
+
         <div class="neo-card rounded-2xl shadow-sm border border-gray-800 p-6 hover:shadow-md transition-shadow relative overflow-hidden group">
             <!-- Deco -->
             <div class="absolute top-0 right-0 w-24 h-24 bg-pink-900/20 rounded-bl-full -z-10 transition-transform group-hover:scale-110"></div>
@@ -38,8 +60,8 @@
                         <p class="text-sm text-pink-500 font-medium"><i class="fa-regular fa-clock mr-1"></i> @item.HoraCita.ToString(@"hh\:mm")</p>
                     </div>
                 </div>
-                <span class="px-2 py-1 text-xs font-semibold rounded-full @(item.Estado == "Confirmada" ? "bg-green-500/10 text-green-700 dark:text-green-300" : "bg-yellow-500/10 text-yellow-700 dark:text-yellow-300")">
-                    @item.Estado
+                <span class="px-2.5 py-1 text-xs font-bold rounded-full @pillClass">
+                    @labelEstado
                 </span>
             </div>
 
@@ -73,22 +95,49 @@
                         </div>
                     </div>
                 }
+
+                <div class="flex items-start gap-2">
+                    <i class="fa-solid fa-dollar-sign text-gray-400 mt-1 w-5 text-center"></i>
+                    <div>
+                        <p class="text-xs text-gray-400 uppercase font-semibold">Valor Total (IVA Incluido)</p>
+                        <p class="text-sm text-gray-800 dark:text-gray-200 font-bold text-pink-500">
+                            $@((Math.Round((item.Servicio?.Precio ?? 0) * 1.19m)).ToString("N0", new System.Globalization.CultureInfo("es-CL")))
+                        </p>
+                    </div>
+                </div>
             </div>
 
-            <div class="border-t border-gray-800 pt-4 flex justify-end">
-                <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" onsubmit="return confirm('¿Estás seguro de cancelar esta cita?');">
-                    <button type="submit" class="text-sm text-red-500 hover:text-red-700 font-medium flex items-center gap-1 transition-colors">
-                        <i class="fa-solid fa-ban"></i> Cancelar Cita
-                    </button>
-                </form>
-            </div>
+            @if (estadoCita != "Cancelada" && !esPasada)
+            {
+                <div class="border-t border-gray-800 pt-4 flex justify-end">
+                    <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" onsubmit="return confirm('¿Estás seguro de cancelar esta cita?');">
+                        <button type="submit" class="text-sm text-red-500 hover:text-red-750 font-semibold flex items-center gap-1 transition-colors">
+                            <i class="fa-solid fa-ban text-xs"></i> Cancelar Cita
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <div class="border-t border-gray-850 dark:border-gray-800/40 pt-4 flex justify-between items-center text-xs text-gray-500 font-light">
+                    @if (estadoCita == "Cancelada")
+                    {
+                        <span class="flex items-center gap-1 text-red-500/70"><i class="fa-solid fa-circle-xmark"></i> Cita cancelada</span>
+                    }
+                    else
+                    {
+                        <span class="flex items-center gap-1 text-blue-500/70"><i class="fa-solid fa-circle-check"></i> Servicio completado</span>
+                    }
+                    <span class="font-mono text-[10px]">#@item.Id</span>
+                </div>
+            }
         </div>
     }
 
     @if (!Model.Any())
     {
-        <div class="col-span-full text-center py-12 neo-card rounded-xl border border-dashed border-gray-300">
-            <i class="fa-regular fa-calendar-xmark text-gray-300 text-5xl mb-3"></i>
+        <div class="col-span-full text-center py-12 neo-card rounded-xl border border-dashed border-gray-800 bg-black/10">
+            <i class="fa-regular fa-calendar-xmark text-gray-600 text-5xl mb-3"></i>
             <h3 class="text-lg font-medium text-white">No hay citas registradas</h3>
             <p class="mt-1 text-gray-400">
                 @(isCliente ? "Aún no has agendado ninguna cita. ¡Hazlo ahora!" : "No tienes citas programadas por el momento.")
