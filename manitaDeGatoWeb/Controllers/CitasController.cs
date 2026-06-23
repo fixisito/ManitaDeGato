@@ -53,7 +53,7 @@ namespace manitaDeGatoWeb.Controllers
             var list = new List<Cita>();
             string query = @"
                 SELECT c.Id, c.FechaCita, c.HoraCita, c.estado, c.IdCliente, c.IdEstilista, c.IdServicio,
-                       cl.nombre AS ClienteNombre, cl.usuario AS ClienteUsuario,
+                       cl.nombre AS ClienteNombre, cl.apellido AS ClienteApellido, cl.usuario AS ClienteUsuario,
                        e.nombre AS EstilistaNombre, e.apellido AS EstilistaApellido,
                        s.nombre AS ServicioNombre, s.precio AS ServicioPrecio, s.duracion AS ServicioDuracion
                 FROM citas c
@@ -98,6 +98,7 @@ namespace manitaDeGatoWeb.Controllers
                     {
                         Id = Convert.ToInt32(row["IdCliente"]),
                         Nombre = row["ClienteNombre"].ToString() ?? string.Empty,
+                        Apellido = row["ClienteApellido"].ToString() ?? string.Empty,
                         Usuario = row["ClienteUsuario"].ToString() ?? string.Empty
                     },
                     Estilista = new Estilista
@@ -170,7 +171,7 @@ namespace manitaDeGatoWeb.Controllers
                 var isCliente = User.IsInRole("Cliente");
                 var isEstilista = User.IsInRole("Estilista");
                 
-                // Validación básica de propiedad
+                // ValidaciÃ³n bÃ¡sica de propiedad
                 if ((isCliente && idCliente != currentUserId) || 
                     (isEstilista && idEstilista != currentUserId) && 
                     !User.IsInRole("Administrador"))
@@ -188,7 +189,7 @@ namespace manitaDeGatoWeb.Controllers
 
         private async Task CargarServiciosYEstilistasEnViewBag(int? selectedServicioId, int? selectedEstilistaId)
         {
-            // 1. Obtener lista de categor�as
+            // 1. Obtener lista de categorías
             var dtCategorias = await _dbHelper.ExecuteQueryAsync("SELECT Id, nombre FROM categoria ORDER BY nombre");
             var categoriasList = new List<object>();
             foreach (DataRow row in dtCategorias.Rows)
@@ -221,7 +222,7 @@ namespace manitaDeGatoWeb.Controllers
             ViewBag.EstilistasJson = System.Text.Json.JsonSerializer.Serialize(estilistasList);
             ViewBag.ServiciosJson = System.Text.Json.JsonSerializer.Serialize(serviciosList);
 
-            // Inicializar listas vac�as para el modelo (se llenar�n mediante Javascript)
+            // Inicializar listas vacías para el modelo (se llenarán mediante Javascript)
             ViewData["IdServicio"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
             ViewData["IdEstilista"] = new SelectList(new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>(), "Value", "Text");
         }

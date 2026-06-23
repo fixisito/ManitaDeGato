@@ -5,79 +5,128 @@
     Layout = "_Layout";
 }
 
-<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 neo-card p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-xl w-full space-y-6 neo-card p-8 sm:p-10 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
         
         <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
         <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
 
         <div class="relative z-10">
-            <div class="text-center">
-                <i class="fa-solid fa-user-plus text-pink-500 text-5xl mb-4"></i>
-                <h2 class="mt-2 text-3xl font-black text-white tracking-tight">
+            <div class="text-center mb-5">
+                <i class="fa-solid fa-user-plus text-pink-500 text-5xl mb-3 animate-pulse"></i>
+                <h2 class="text-3xl sm:text-4xl font-black text-white tracking-tight">
                     Crea tu cuenta
                 </h2>
-                <p class="mt-2 text-sm text-gray-400">
+                <p class="text-sm text-gray-400 mt-1">
                     Únete a Manita De Gato y agenda tus citas fácilmente
                 </p>
             </div>
 
             @if (ViewBag.Error != null)
             {
-                <div class="mt-4 border-l-2 border-red-500 pl-4 py-2 bg-red-500/10">
+                <div class="mb-4 border-l-2 border-red-500 pl-4 py-2 bg-red-500/10">
                     <p class="text-xs font-mono text-red-400 tracking-wider">[ERROR] @ViewBag.Error</p>
                 </div>
             }
 
-            <form class="mt-8 space-y-6" asp-action="Registro" method="POST">
+            <form class="space-y-4" asp-action="Registro" method="POST">
                 <div asp-validation-summary="ModelOnly" class="text-red-500 text-sm"></div>
                 
                 <div class="space-y-4">
-                    <div>
-                        <label asp-for="Nombre" class="block text-sm font-medium text-gray-300 mb-1">Nombre Completo</label>
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-address-card text-gray-400"></i>
+                    <!-- Datos Personales -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="Nombre" class="block text-sm font-semibold text-gray-400 mb-1.5">Nombre</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-address-card text-gray-400 text-sm"></i>
+                                </div>
+                                <input asp-for="Nombre" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="Ana">
                             </div>
-                            <input asp-for="Nombre" required class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-white focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm" placeholder="Ej. Ana García">
+                            <span asp-validation-for="Nombre" class="text-red-500 text-xs"></span>
                         </div>
-                        <span asp-validation-for="Nombre" class="text-red-500 text-xs"></span>
+
+                        <div>
+                            <label asp-for="Apellido" class="block text-sm font-semibold text-gray-400 mb-1.5">Apellido</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-address-card text-gray-400 text-sm"></i>
+                                </div>
+                                <input asp-for="Apellido" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="García">
+                            </div>
+                            <span asp-validation-for="Apellido" class="text-red-500 text-xs"></span>
+                        </div>
                     </div>
 
                     <div>
-                        <label asp-for="Usuario" class="block text-sm font-medium text-gray-300 mb-1">Nombre de Usuario</label>
+                        <label asp-for="Correo" class="block text-sm font-semibold text-gray-400 mb-1.5">Correo Electrónico</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-user text-gray-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-envelope text-gray-400 text-sm"></i>
                             </div>
-                            <input asp-for="Usuario" required class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-white focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm" placeholder="ana_garcia">
+                            <input asp-for="Correo" type="email" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="ana.garcia@example.com">
+                        </div>
+                        <span asp-validation-for="Correo" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="Telefono" class="block text-sm font-semibold text-gray-400 mb-1.5">Teléfono Móvil</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-phone text-gray-400 text-sm"></i>
+                            </div>
+                            <input asp-for="Telefono" id="Telefono" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="+56 9 XXXX XXXX">
+                        </div>
+                        <span asp-validation-for="Telefono" class="text-red-500 text-xs"></span>
+                    </div>
+
+                    <!-- Separador de Diseño Rosado Adaptable al Fondo -->
+                    <div class="relative py-4">
+                        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div class="w-full border-t border-pink-500/30"></div>
+                        </div>
+                        <div class="relative flex justify-center text-xs uppercase font-bold tracking-widest">
+                            <span class="px-4 text-pink-500 dark:text-pink-400 rounded border border-pink-500/20 py-1 shadow-sm transition-colors duration-500" style="background-color: var(--bg-color)">
+                                Credenciales de Acceso
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Credenciales de Cuenta -->
+                    <div>
+                        <label asp-for="Usuario" class="block text-sm font-semibold text-gray-400 mb-1.5">Nombre de Usuario</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-user text-gray-400 text-sm"></i>
+                            </div>
+                            <input asp-for="Usuario" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="ana_garcia">
                         </div>
                         <span asp-validation-for="Usuario" class="text-red-500 text-xs"></span>
                     </div>
 
                     <div>
-                        <label asp-for="Contraseña" class="block text-sm font-medium text-gray-300 mb-1">Contraseña</label>
+                        <label asp-for="Contraseña" class="block text-sm font-semibold text-gray-400 mb-1.5">Contraseña</label>
                         <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fa-solid fa-lock text-gray-400"></i>
+                            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-gray-400 text-sm"></i>
                             </div>
-                            <input asp-for="Contraseña" type="password" required class="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-400 text-white focus:outline-none focus:ring-pink-500 focus:border-pink-500 sm:text-sm" placeholder="••••••••">
+                            <input asp-for="Contraseña" type="password" required class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-base" placeholder="••••••••">
                         </div>
                         <span asp-validation-for="Contraseña" class="text-red-500 text-xs"></span>
                     </div>
                 </div>
 
-                <div>
-                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-real-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all shadow-md hover:shadow-lg">
+                <div class="pt-3">
+                    <button type="submit" class="w-full flex justify-center py-3.5 px-4 border border-transparent text-base font-bold rounded-lg text-real-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all shadow-md hover:shadow-lg">
                         Registrarme
                     </button>
                 </div>
             </form>
 
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600 dark:text-gray-400">
+            <div class="mt-5 text-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
                     ¿Ya tienes cuenta? 
-                    <a asp-action="Login" class="font-medium text-pink-600 hover:text-pink-500">Inicia Sesión</a>
+                    <a asp-action="Login" class="font-bold text-pink-600 hover:text-pink-500 transition-colors">Inicia Sesión</a>
                 </p>
             </div>
         </div>
@@ -86,4 +135,50 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('Telefono').addEventListener('input', function(e) {
+            let value = e.target.value;
+            if (!value) return;
+
+            let digits = value.replace(/\D/g, '');
+            
+            // Si el usuario ingresa prefijo internacional completo, limpiar el 56 inicial
+            if (digits.startsWith('569')) {
+                digits = digits.substring(2);
+            } else if (digits.startsWith('56')) {
+                digits = digits.substring(2);
+            }
+
+            // Forzar que empiece por 9
+            if (digits.length > 0 && digits[0] !== '9') {
+                digits = '9' + digits;
+            }
+
+            // Limitar a 9 dígitos (9XXXXXXXX)
+            if (digits.length > 9) {
+                digits = digits.substring(0, 9);
+            }
+
+            let formatted = '';
+            if (digits.length > 0) {
+                formatted = '+56 9';
+                if (digits.length > 1) {
+                    formatted += ' ' + digits.substring(1, 5);
+                }
+                if (digits.length > 5) {
+                    formatted += ' ' + digits.substring(5, 9);
+                }
+            }
+            
+            e.target.value = formatted;
+        });
+
+        document.getElementById('Telefono').addEventListener('keydown', function(e) {
+            let value = e.target.value;
+            // Si presionan borrar cuando solo está el prefijo, limpiar el input completo
+            if (e.key === 'Backspace' && value === '+56 9') {
+                e.target.value = '';
+            }
+        });
+    </script>
 }

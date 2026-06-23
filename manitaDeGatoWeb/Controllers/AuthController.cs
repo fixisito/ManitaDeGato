@@ -53,20 +53,21 @@ namespace manitaDeGatoWeb.Controllers
 
             // 2. Check Cliente
             var clienteTable = await _dbHelper.ExecuteQueryAsync(
-                "SELECT Id, usuario, nombre FROM clientes WHERE usuario = @usuario AND contraseña = @contrasena",
+                "SELECT Id, usuario, nombre, apellido FROM clientes WHERE usuario = @usuario AND contraseña = @contrasena",
                 new SqlParameter("@usuario", usuario),
                 new SqlParameter("@contrasena", contrasena));
 
             if (clienteTable.Rows.Count > 0)
             {
                 var row = clienteTable.Rows[0];
-                await SignInUser(row["Id"].ToString()!, row["usuario"].ToString()!, "Cliente", row["nombre"].ToString()!);
+                var fullName = $"{row["nombre"]} {row["apellido"]}".Trim();
+                await SignInUser(row["Id"].ToString()!, row["usuario"].ToString()!, "Cliente", fullName);
                 return RedirectToAction("Index", "Home");
             }
 
             // 3. Check Estilista
             var estilistaTable = await _dbHelper.ExecuteQueryAsync(
-                "SELECT Id, usuario, nombre, apellido FROM estilistas WHERE usuario = @usuario AND contraseña = @contrasena",
+                "SELECT Id, usuario, nombre, apellido, correo FROM estilistas WHERE usuario = @usuario AND contraseña = @contrasena",
                 new SqlParameter("@usuario", usuario),
                 new SqlParameter("@contrasena", contrasena));
 
@@ -93,7 +94,7 @@ namespace manitaDeGatoWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Registro([Bind("Nombre,Usuario,Contraseña")] Cliente cliente)
+        public async Task<IActionResult> Registro([Bind("Nombre,Apellido,Correo,Telefono,Usuario,Contraseña")] Cliente cliente)
         {
             if (ModelState.IsValid)
             {
@@ -116,11 +117,14 @@ namespace manitaDeGatoWeb.Controllers
                     return View(cliente);
                 }
 
-                // Insertar el nuevo cliente en texto plano y obtener su ID asignado (telefono es obligatorio en el MDF, asignamos cadena vacia por defecto)
-                var insertQuery = "INSERT INTO clientes (nombre, telefono, usuario, contraseña) VALUES (@nombre, '', @usuario, @contraseña); SELECT SCOPE_IDENTITY();";
+                // Insertar el nuevo cliente
+                var insertQuery = "INSERT INTO clientes (nombre, apellido, correo, telefono, usuario, contraseña) VALUES (@nombre, @apellido, @correo, @telefono, @usuario, @contraseña); SELECT SCOPE_IDENTITY();";
                 var parameters = new[]
                 {
                     new SqlParameter("@nombre", cliente.Nombre),
+                    new SqlParameter("@apellido", cliente.Apellido),
+                    new SqlParameter("@correo", cliente.Correo),
+                    new SqlParameter("@telefono", cliente.Telefono),
                     new SqlParameter("@usuario", cliente.Usuario),
                     new SqlParameter("@contraseña", cliente.Contraseña)
                 };
@@ -129,7 +133,7 @@ namespace manitaDeGatoWeb.Controllers
                 int newId = Convert.ToInt32(result);
 
                 // Iniciar sesión automáticamente tras el registro exitoso
-                await SignInUser(newId.ToString(), cliente.Usuario, "Cliente", cliente.Nombre);
+                await SignInUser(newId.ToString(), cliente.Usuario, "Cliente", $"{cliente.Nombre} {cliente.Apellido}");
                 
                 return RedirectToAction("Index", "Home");
             }

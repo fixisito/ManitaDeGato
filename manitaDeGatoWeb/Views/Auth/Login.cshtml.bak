@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = "_Layout";
+}
+
+<div class="min-h-[85vh] flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-lg w-full space-y-5 neo-card p-6 sm:p-8 rounded-2xl shadow-xl border border-pink-500/20 relative overflow-hidden">
+        
+        <div class="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-pink-500/10 opacity-50"></div>
+        <div class="absolute bottom-0 left-0 -ml-8 -mb-8 w-24 h-24 rounded-full bg-pink-500/20 opacity-50"></div>
+
+        <div class="relative z-10">
+            <div class="text-center mb-6">
+                <i class="fa-solid fa-cat text-pink-500 text-4xl mb-2 animate-pulse"></i>
+                <h2 class="text-2xl sm:text-3xl font-black text-white tracking-tight">
+                    Inicia Sesión
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">
+                    Ingresa tus credenciales para acceder a tu cuenta
+                </p>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="mb-4 border-l-2 border-red-500 pl-3 py-1.5 bg-red-500/10">
+                    <p class="text-xs font-mono text-red-400 tracking-wider">
+                        [ERROR] @ViewBag.Error
+                    </p>
+                </div>
+            }
+
+            <form class="space-y-4" asp-controller="Auth" asp-action="Login" method="POST">
+                <div class="space-y-4">
+                    <div>
+                        <label for="usuario" class="block text-xs font-medium text-gray-400 mb-1">Usuario</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-user text-gray-400 text-xs"></i>
+                            </div>
+                            <input id="usuario" name="usuario" type="text" required class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-sm" placeholder="Ingresa tu usuario">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="contrasena" class="block text-xs font-medium text-gray-400 mb-1">Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-lock text-gray-400 text-xs"></i>
+                            </div>
+                            <input id="contrasena" name="contrasena" type="password" required class="w-full pl-9 pr-3 py-2 border border-gray-300 dark:border-gray-700/50 rounded-lg bg-white/50 dark:bg-gray-800/30 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all duration-200 text-sm" placeholder="••••••••">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="w-full flex justify-between items-center py-2.5 px-6 text-sm font-semibold rounded-lg text-real-white bg-pink-600 hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-pink-500 transition-all shadow-md hover:shadow-lg">
+                        <span>Ingresar</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 border-t border-gray-200 dark:border-gray-800 pt-4 text-center">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    ¿Aún no tienes cuenta? 
+                    <a asp-action="Registro" class="font-semibold text-pink-600 hover:text-pink-500 transition-colors">Crea una Cuenta</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

@@ -40,13 +40,24 @@
     @foreach (var item in Model)
     {
         <div class="neo-card rounded-2xl shadow-sm border border-gray-800 p-6 hover:shadow-md transition-shadow">
-            <div class="flex items-center gap-4 mb-4">
-                <div class="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 text-2xl font-bold">
+            <div class="flex items-center gap-4 mb-3">
+                <div class="w-16 h-16 bg-pink-500/10 rounded-full flex items-center justify-center text-pink-500 text-2xl font-bold shrink-0">
                     @(item.Nombre.Substring(0,1))@(item.Apellido?.Substring(0,1))
                 </div>
-                <div>
-                    <h3 class="text-lg font-bold text-white">@item.Nombre @item.Apellido</h3>
+                <div class="min-w-0">
+                    <h3 class="text-lg font-bold text-white truncate">@item.Nombre @item.Apellido</h3>
                     <p class="text-sm text-gray-400">@@@item.Usuario</p>
+                </div>
+            </div>
+            
+            <div class="space-y-1.5 text-xs text-gray-400 mb-4 pl-1">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-envelope text-pink-500/70 w-4 text-center"></i>
+                    <span class="truncate">@item.Correo</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-phone text-pink-500/70 w-4 text-center"></i>
+                    <span>@item.Telefono</span>
                 </div>
             </div>
             
